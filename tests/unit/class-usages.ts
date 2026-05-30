@@ -5,6 +5,7 @@ import type { CssModuleImport } from "../../src/types.js";
 
 const cssImport: CssModuleImport = {
   localName: "styles",
+  namedImports: [],
   importPath: "./button.module.css",
   cssModulePath: "/project/button.module.css",
   index: 0
@@ -35,6 +36,29 @@ describe("class usage extraction", () => {
     const usages = findCssModuleClassUsages(source, program, [cssImport]);
 
     expect(resolvedClassNames(usages)).toEqual(["one", "two", "three", "four"]);
+  });
+
+  it("finds named CSS Module import usages and aliases", () => {
+    const source = `
+      import { one, two as second } from "./button.module.css";
+
+      <button className={one + " " + second} />;
+    `;
+    const program = parseProgram(source);
+    const usages = findCssModuleClassUsages(source, program, [
+      {
+        localName: undefined,
+        namedImports: [
+          { importedName: "one", localName: "one", index: 0 },
+          { importedName: "two", localName: "second", index: 0 }
+        ],
+        importPath: "./button.module.css",
+        cssModulePath: "/project/button.module.css",
+        index: 0
+      }
+    ]);
+
+    expect(resolvedClassNames(usages)).toEqual(["one", "two"]);
   });
 
   it("finds raw class strings in clsx/classnames/manual/template composition", () => {

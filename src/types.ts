@@ -47,8 +47,15 @@ export type CheckOptions = {
   rules?: RulesConfig;
 };
 
-export type CssModuleImport = {
+export type CssModuleNamedImport = {
+  importedName: string;
   localName: string;
+  index: number;
+};
+
+export type CssModuleImport = {
+  localName?: string;
+  namedImports: CssModuleNamedImport[];
   importPath: string;
   cssModulePath: string;
   index: number;

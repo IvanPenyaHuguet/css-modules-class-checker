@@ -6,7 +6,8 @@ reports CSS Module classes used incorrectly as raw `className` strings.
 
 The checker is built for JavaScript and TypeScript React projects, especially
 `.tsx` files using CSS Modules. It supports direct `className` expressions as
-well as composition through `clsx` and `classnames`.
+well as composition through `clsx` and `classnames`. CSS Modules can be used
+through default imports or named exports.
 
 ## Installation And Usage
 

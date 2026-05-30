@@ -16,9 +16,37 @@ export function findCssModuleClassUsages(
 ): ClassUsage[] {
   const usages: ClassUsage[] = [];
   const resolveStatic = createStaticResolver(program);
-  const importsByLocalName = new Map(imports.map((cssImport) => [cssImport.localName, cssImport]));
+  const importsByLocalName = new Map(
+    imports
+      .filter((cssImport): cssImport is CssModuleImport & { localName: string } => {
+        return typeof cssImport.localName === "string";
+      })
+      .map((cssImport) => [cssImport.localName, cssImport])
+  );
+  const namedImportsByLocalName = new Map(
+    imports.flatMap((cssImport) => {
+      return cssImport.namedImports.map((namedImport) => [
+        namedImport.localName,
+        { cssImport, namedImport }
+      ]);
+    })
+  );
 
-  walkAst(program, (node) => {
+  walkAst(program, (node, ancestors) => {
+    const identifierName = getIdentifierName(node);
+    const namedImport = identifierName ? namedImportsByLocalName.get(identifierName) : undefined;
+
+    if (namedImport && !isNonUsageIdentifier(node, ancestors)) {
+      usages.push({
+        kind: "resolved",
+        localName: namedImport.namedImport.localName,
+        className: namedImport.namedImport.importedName,
+        cssModulePath: namedImport.cssImport.cssModulePath,
+        location: getLocation(source, node.start ?? 0)
+      });
+      return;
+    }
+
     if (node.type !== "MemberExpression") {
       return;
     }
@@ -77,6 +105,24 @@ export function findCssModuleClassUsages(
   });
 
   return usages;
+}
+
+function isNonUsageIdentifier(node: AstNode, ancestors: AstNode[]): boolean {
+  const parent = ancestors.at(-1);
+
+  if (ancestors.some((ancestor) => ancestor.type === "ImportDeclaration")) {
+    return true;
+  }
+
+  if (parent?.type === "MemberExpression" && parent.property === node && parent.computed !== true) {
+    return true;
+  }
+
+  if (parent?.type === "Property" && parent.key === node && parent.computed !== true) {
+    return true;
+  }
+
+  return false;
 }
 
 export function findRawClassNameUsages(source: string, program: AstNode): RawClassUsage[] {

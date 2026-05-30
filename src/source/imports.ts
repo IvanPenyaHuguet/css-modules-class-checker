@@ -18,21 +18,36 @@ export function findCssModuleImports(program: AstNode, filePath: string): CssMod
       continue;
     }
 
-    const defaultSpecifier = statement.specifiers.find((specifier) => {
-      return isAstImportSpecifier(specifier) && specifier.type === "ImportDefaultSpecifier";
-    });
+    const defaultSpecifier = statement.specifiers.find(isDefaultImportSpecifier);
     const localName = getIdentifierName(
       defaultSpecifier && isAstImportSpecifier(defaultSpecifier)
         ? defaultSpecifier.local
         : undefined
     );
+    const namedImports = statement.specifiers
+      .filter(isNamedImportSpecifier)
+      .flatMap((specifier) => {
+        const importedName = getImportSpecifierName(specifier.imported);
+        const namedLocalName = getIdentifierName(specifier.local);
 
-    if (!localName) {
+        return importedName && namedLocalName
+          ? [
+              {
+                importedName,
+                localName: namedLocalName,
+                index: specifier.start ?? statement.start ?? 0
+              }
+            ]
+          : [];
+      });
+
+    if (!localName && namedImports.length === 0) {
       continue;
     }
 
     imports.push({
       localName,
+      namedImports,
       importPath,
       cssModulePath: path.resolve(path.dirname(filePath), importPath),
       index: statement.start ?? 0
@@ -51,4 +66,18 @@ function isImportDeclaration(node: unknown): node is AstNode & {
 
 function isAstImportSpecifier(node: unknown): node is AstNode & { local: unknown } {
   return isAstNode(node) && "local" in node;
+}
+
+function isDefaultImportSpecifier(node: unknown): node is AstNode & { local: unknown } {
+  return isAstImportSpecifier(node) && node.type === "ImportDefaultSpecifier";
+}
+
+function isNamedImportSpecifier(
+  node: unknown
+): node is AstNode & { imported: unknown; local: unknown } {
+  return isAstImportSpecifier(node) && node.type === "ImportSpecifier" && "imported" in node;
+}
+
+function getImportSpecifierName(node: unknown): string | undefined {
+  return getIdentifierName(node) ?? getStringLiteralValue(node);
 }

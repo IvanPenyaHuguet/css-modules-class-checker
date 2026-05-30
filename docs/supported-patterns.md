@@ -4,10 +4,13 @@
 
 ```tsx
 import styles from "./button.module.css";
+import { secondary, danger as dangerClass } from "./button.module.css";
 
 styles.primary;
 styles["primary"];
 styles[`primary`];
+secondary;
+dangerClass;
 
 const variant = "primary";
 styles[variant];
