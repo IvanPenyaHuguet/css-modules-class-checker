@@ -129,7 +129,7 @@ export function findRawClassNameUsages(source: string, program: AstNode): RawCla
   const usages: RawClassUsage[] = [];
 
   walkAst(program, (node, ancestors) => {
-    if (!isClassNameAttribute(node)) {
+    if (!isClassAttribute(node)) {
       return;
     }
 
@@ -196,12 +196,12 @@ export function findRawClassNameUsages(source: string, program: AstNode): RawCla
   return usages;
 }
 
-function isClassNameAttribute(node: AstNode): node is AstNode & { value: unknown } {
+function isClassAttribute(node: AstNode): node is AstNode & { value: unknown } {
   return (
     node.type === "JSXAttribute" &&
     isAstNode(node.name) &&
     node.name.type === "JSXIdentifier" &&
-    node.name.name === "className"
+    (node.name.name === "className" || node.name.name === "class")
   );
 }
 

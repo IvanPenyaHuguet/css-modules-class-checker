@@ -5,9 +5,9 @@ Checks that class names used from CSS Modules are defined in their matching
 reports CSS Module classes used incorrectly as raw `className` strings.
 
 The checker is built for JavaScript and TypeScript React projects, especially
-`.tsx` files using CSS Modules. It supports direct `className` expressions as
-well as composition through `clsx` and `classnames`. CSS Modules can be used
-through default imports or named exports.
+`.tsx` files using CSS Modules. It supports direct `className` and `class`
+expressions as well as composition through `clsx` and `classnames`. CSS Modules
+can be used through default imports or named exports.
 
 ## Installation And Usage
 
@@ -189,16 +189,16 @@ Each rule accepts `off`, `warning`, or `error`.
 
 ## Diagnostics
 
-| Code                        | Example                                                                 |
-| --------------------------- | ----------------------------------------------------------------------- |
-| `missing-css-module-class`  | `styles.secondary` while only `.primary` exists                         |
-| `unused-css-module-class`   | `.secondary` exists but no source file uses it                          |
-| `raw-css-module-class`      | `className="primary"` when `.primary` belongs to an imported CSS Module |
-| `empty-css-module-selector` | `.marker { /* EMPTY */ }`                                               |
-| `unresolved-dynamic-class`  | `styles[getClassName()]`                                                |
-| `css-module-file-not-found` | `import styles from "./missing.module.css"`                             |
-| `css-parse-error`           | Unmatched braces in a CSS Module                                        |
-| `source-parse-error`        | Reserved for source parser failures                                     |
+| Code                        | Example                                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------------------- |
+| `missing-css-module-class`  | `styles.secondary` while only `.primary` exists                                              |
+| `unused-css-module-class`   | `.secondary` exists but no source file uses it                                               |
+| `raw-css-module-class`      | `className="primary"` or `class="primary"` when `.primary` belongs to an imported CSS Module |
+| `empty-css-module-selector` | `.marker { /* EMPTY */ }`                                                                    |
+| `unresolved-dynamic-class`  | `styles[getClassName()]`                                                                     |
+| `css-module-file-not-found` | `import styles from "./missing.module.css"`                                                  |
+| `css-parse-error`           | Unmatched braces in a CSS Module                                                             |
+| `source-parse-error`        | Reserved for source parser failures                                                          |
 
 ## Supported Patterns
 

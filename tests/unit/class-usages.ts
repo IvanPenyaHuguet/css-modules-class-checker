@@ -84,6 +84,20 @@ describe("class usage extraction", () => {
       "seven"
     ]);
   });
+
+  it("finds raw class strings in class attributes", () => {
+    const source = `
+      import clsx from "clsx";
+      import styles from "./button.module.css";
+
+      <button class="one two" />;
+      <button class={clsx("three", { four: active })} />;
+    `;
+    const program = parseProgram(source);
+    const usages = findRawClassNameUsages(source, program);
+
+    expect(usages.map((usage) => usage.className)).toEqual(["one", "two", "three", "four"]);
+  });
 });
 
 function parseProgram(source: string) {

@@ -57,6 +57,8 @@ Raw class strings matching an imported CSS Module class are reported:
 import styles from "./button.module.css";
 
 className="primary";
+class="primary";
 className={clsx("primary")}
+class={clsx("primary")}
 className={clsx({ primary: active })}
 ```
