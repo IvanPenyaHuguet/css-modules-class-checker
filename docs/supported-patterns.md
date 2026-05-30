@@ -29,6 +29,11 @@ styles[VariantClass.Primary];
 const tone: "Primary" | "Secondary" = "Primary";
 const state: "Active" | "Disabled" = "Active";
 styles[`button${tone}${state}`];
+
+// With localsConvention: "camelCase"
+// .primary_button and .is-active can be imported as:
+styles.primaryButton;
+styles.isActive;
 ```
 
 ## Class Composition

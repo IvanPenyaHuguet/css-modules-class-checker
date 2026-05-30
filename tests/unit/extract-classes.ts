@@ -166,4 +166,77 @@ describe("CSS class extraction", () => {
     expect([...result.classes].sort()).toEqual(["button", "marker"]);
     expect([...result.emptyClasses].sort()).toEqual(["marker"]);
   });
+
+  it("does not transform importable class names by default", () => {
+    const result = extractCssClasses(`
+      .primary_button {
+        color: red;
+      }
+
+      .is-active {
+        color: blue;
+      }
+    `);
+
+    expect(result.ok).toBe(true);
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    expect([...result.importableClasses.keys()].sort()).toEqual(["is-active", "primary_button"]);
+  });
+
+  it("can add camelCase importable class names", () => {
+    const result = extractCssClasses(
+      `
+        .primary_button {
+          color: red;
+        }
+
+        .is-active {
+          color: blue;
+        }
+      `,
+      "input.module.css",
+      "camelCase"
+    );
+
+    expect(result.ok).toBe(true);
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    expect([...result.importableClasses.keys()].sort()).toEqual([
+      "is-active",
+      "isActive",
+      "primaryButton",
+      "primary_button"
+    ]);
+  });
+
+  it("can use only dash-camelized importable class names", () => {
+    const result = extractCssClasses(
+      `
+        .primary_button {
+          color: red;
+        }
+
+        .is-active {
+          color: blue;
+        }
+      `,
+      "input.module.css",
+      "dashesOnly"
+    );
+
+    expect(result.ok).toBe(true);
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    expect([...result.importableClasses.keys()].sort()).toEqual(["isActive", "primary_button"]);
+  });
 });

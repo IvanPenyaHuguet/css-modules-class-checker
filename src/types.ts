@@ -32,10 +32,18 @@ export type CheckResult = {
 
 export type RulesConfig = Partial<Record<DiagnosticCode, RuleLevel>>;
 
+export type LocalsConvention =
+  | "camelCase"
+  | "camelCaseOnly"
+  | "dashes"
+  | "dashesOnly"
+  | ((originalClassName: string, generatedClassName: string, inputFile: string) => string);
+
 export type CheckOptions = {
   target?: string;
   ignore?: string[];
   ignoreClasses?: Array<string | RegExp>;
+  localsConvention?: LocalsConvention;
   rules?: RulesConfig;
 };
 

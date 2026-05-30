@@ -5,6 +5,7 @@ export type {
   CheckStatus,
   Diagnostic,
   DiagnosticCode,
+  LocalsConvention,
   RuleLevel,
   RulesConfig
 } from "./types.js";

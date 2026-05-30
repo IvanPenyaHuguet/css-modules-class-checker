@@ -18,6 +18,7 @@ import type {
 
 type CssModuleRecord = {
   classes: Set<string>;
+  importableClasses: Map<string, Set<string>>;
   emptyClasses: Set<string>;
   locations: Map<string, SourceLocation>;
   usedClasses: Set<string>;
@@ -68,7 +69,11 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
 
       if (!cssModules.has(cssImport.cssModulePath)) {
         const cssSource = await readFile(cssImport.cssModulePath, "utf8");
-        const extracted = extractCssClasses(cssSource, cssImport.cssModulePath);
+        const extracted = extractCssClasses(
+          cssSource,
+          cssImport.cssModulePath,
+          options.localsConvention
+        );
 
         if (!extracted.ok) {
           pushDiagnostic(diagnostics, rules, {
@@ -84,6 +89,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
 
         cssModules.set(cssImport.cssModulePath, {
           classes: extracted.classes,
+          importableClasses: extracted.importableClasses,
           emptyClasses: extracted.emptyClasses,
           locations: extracted.locations,
           usedClasses: new Set(),
@@ -129,21 +135,27 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
 
       const cssModule = cssModules.get(usage.cssModulePath);
 
-      if (cssModule?.classes.has(usage.className)) {
-        cssModule.usedClasses.add(usage.className);
+      if (!cssModule) {
         continue;
       }
 
-      if (cssModule) {
-        pushDiagnostic(diagnostics, rules, {
-          code: "missing-css-module-class",
-          message: `Class "${usage.className}" is not defined in ${path.basename(usage.cssModulePath)}.`,
-          filePath,
-          cssModulePath: usage.cssModulePath,
-          className: usage.className,
-          location: usage.location
-        });
+      const usedClasses = cssModule.importableClasses.get(usage.className);
+
+      if (usedClasses) {
+        for (const className of usedClasses) {
+          cssModule.usedClasses.add(className);
+        }
+        continue;
       }
+
+      pushDiagnostic(diagnostics, rules, {
+        code: "missing-css-module-class",
+        message: `Class "${usage.className}" is not defined in ${path.basename(usage.cssModulePath)}.`,
+        filePath,
+        cssModulePath: usage.cssModulePath,
+        className: usage.className,
+        location: usage.location
+      });
     }
 
     for (const rawUsage of findRawClassNameUsages(source, parsedSource.program)) {

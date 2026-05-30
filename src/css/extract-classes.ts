@@ -1,12 +1,14 @@
 import { Buffer } from "node:buffer";
 import { Features, transform, type Selector } from "lightningcss";
+import { getLocalClassNames } from "../config.js";
 import { getLocation } from "../locations.js";
-import type { SourceLocation } from "../types.js";
+import type { LocalsConvention, SourceLocation } from "../types.js";
 
 export type CssClassExtraction =
   | {
       ok: true;
       classes: Set<string>;
+      importableClasses: Map<string, Set<string>>;
       emptyClasses: Set<string>;
       locations: Map<string, SourceLocation>;
     }
@@ -14,7 +16,8 @@ export type CssClassExtraction =
 
 export function extractCssClasses(
   source: string,
-  filename = "input.module.css"
+  filename = "input.module.css",
+  localsConvention?: LocalsConvention
 ): CssClassExtraction {
   try {
     const transformed = transform({
@@ -32,7 +35,13 @@ export function extractCssClasses(
       classes.add(className);
     }
 
-    return { ok: true, classes, emptyClasses, locations };
+    return {
+      ok: true,
+      classes,
+      importableClasses: getImportableClasses(classes, filename, localsConvention),
+      emptyClasses,
+      locations
+    };
   } catch (error) {
     const loc = getErrorLocation(error);
 
@@ -43,6 +52,37 @@ export function extractCssClasses(
       column: loc.column
     };
   }
+}
+
+function getImportableClasses(
+  classes: Set<string>,
+  filename: string,
+  localsConvention: LocalsConvention | undefined
+): Map<string, Set<string>> {
+  const importableClasses = new Map<string, Set<string>>();
+
+  for (const className of classes) {
+    for (const localClassName of getLocalClassNames(className, filename, localsConvention)) {
+      addImportableClass(importableClasses, localClassName, className);
+    }
+  }
+
+  return importableClasses;
+}
+
+function addImportableClass(
+  importableClasses: Map<string, Set<string>>,
+  importableClassName: string,
+  className: string
+): void {
+  const mappedClasses = importableClasses.get(importableClassName);
+
+  if (mappedClasses) {
+    mappedClasses.add(className);
+    return;
+  }
+
+  importableClasses.set(importableClassName, new Set([className]));
 }
 
 function getEmptyStandaloneClasses(source: string, filename: string): Set<string> {

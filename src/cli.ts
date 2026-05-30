@@ -3,9 +3,17 @@ import path from "node:path";
 import { Command, InvalidArgumentError } from "commander";
 import { checkCssModules } from "./checker.js";
 import { renderTextReport } from "./reporters/text.js";
-import type { DiagnosticCode, RuleLevel, RulesConfig } from "./types.js";
+import type { DiagnosticCode, LocalsConvention, RuleLevel, RulesConfig } from "./types.js";
+
+type CliLocalsConvention = Extract<LocalsConvention, string>;
 
 const validRuleLevels = new Set<string>(["off", "warning", "error"]);
+const validLocalsConventions = new Set<string>([
+  "camelCase",
+  "camelCaseOnly",
+  "dashes",
+  "dashesOnly"
+]);
 const validRuleCodes = new Set<string>([
   "missing-css-module-class",
   "unused-css-module-class",
@@ -20,6 +28,7 @@ const validRuleCodes = new Set<string>([
 type CliOptions = {
   ignore?: string[];
   ignoreClass?: string[];
+  localsConvention?: string;
   rule?: string[];
 };
 
@@ -29,6 +38,10 @@ const program = new Command()
   .argument("[target]", "target directory", ".")
   .option("--ignore <pattern...>", "ignore files or directories")
   .option("--ignore-class <name...>", "ignore specific class names")
+  .option(
+    "--locals-convention <convention>",
+    "CSS Modules locals convention: camelCase, camelCaseOnly, dashes, or dashesOnly"
+  )
   .option("--rule <rule=level...>", "configure rules: off, warning, or error")
   .exitOverride();
 
@@ -42,6 +55,7 @@ try {
     target,
     ignore: cliOptions.ignore,
     ignoreClasses: cliOptions.ignoreClass,
+    localsConvention: parseLocalsConvention(cliOptions.localsConvention),
     rules
   });
 
@@ -80,4 +94,22 @@ function isDiagnosticCode(value: string | undefined): value is DiagnosticCode {
 
 function isRuleLevel(value: string | undefined): value is RuleLevel {
   return typeof value === "string" && validRuleLevels.has(value);
+}
+
+function parseLocalsConvention(value: string | undefined): CliLocalsConvention | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!isCliLocalsConvention(value)) {
+    throw new InvalidArgumentError(
+      `Invalid locals convention "${value}". Expected camelCase, camelCaseOnly, dashes, or dashesOnly.`
+    );
+  }
+
+  return value;
+}
+
+function isCliLocalsConvention(value: string): value is CliLocalsConvention {
+  return validLocalsConventions.has(value);
 }

@@ -35,6 +35,7 @@ css-modules-class-checker [target]
 ```bash
 --ignore <pattern...>       Ignore files or directories
 --ignore-class <name...>    Ignore specific class names
+--locals-convention <name>  CSS Modules locals convention
 --rule <rule=level...>      Configure rules: off, warning, or error
 ```
 
@@ -50,6 +51,7 @@ Examples:
 ```bash
 css-modules-class-checker src --ignore generated
 css-modules-class-checker src --ignore-class legacy-global external
+css-modules-class-checker src --locals-convention camelCase
 css-modules-class-checker src --rule unresolved-dynamic-class=warning
 css-modules-class-checker src --rule empty-css-module-selector=off
 ```
@@ -71,6 +73,7 @@ const result = await checkCssModules({
   target: "src",
   ignore: ["dist", "node_modules"],
   ignoreClasses: ["legacy-global", /^external-/],
+  localsConvention: "camelCase",
   rules: {
     "unresolved-dynamic-class": "warning"
   }
@@ -78,6 +81,21 @@ const result = await checkCssModules({
 
 console.log(result.status);
 console.log(result.errors);
+```
+
+`localsConvention` follows the CSS Modules convention used by tools such as
+Vite. The default is `undefined`, which means class names are not transformed:
+`.primary_button` is available as `styles.primary_button`, and `.is-active` as
+`styles["is-active"]`.
+
+Supported values are `"camelCase"`, `"camelCaseOnly"`, `"dashes"`, and
+`"dashesOnly"`. The API also accepts a Vite-style function:
+
+```ts
+await checkCssModules({
+  target: "src",
+  localsConvention: (originalClassName, generatedClassName, inputFile) => `$${originalClassName}`
+});
 ```
 
 ## Result Shape
