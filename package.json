@@ -1,6 +1,6 @@
 {
   "name": "css-modules-class-checker",
-  "version": "0.0.0",
+  "version": "1.0.0-beta.1",
   "description": "Checks CSS Modules class usages in JavaScript and TypeScript projects.",
   "license": "MIT",
   "bin": {
