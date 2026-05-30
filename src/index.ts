@@ -1,5 +1,4 @@
 export { checkCssModules } from "./checker.js";
-export { renderTextReport } from "./reporters/text.js";
 export type {
   CheckOptions,
   CheckResult,
