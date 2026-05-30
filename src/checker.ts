@@ -67,7 +67,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
 
       if (!cssModules.has(cssImport.cssModulePath)) {
         const cssSource = await readFile(cssImport.cssModulePath, "utf8");
-        const extracted = extractCssClasses(cssSource);
+        const extracted = extractCssClasses(cssSource, cssImport.cssModulePath);
 
         if (!extracted.ok) {
           pushDiagnostic(diagnostics, rules, {

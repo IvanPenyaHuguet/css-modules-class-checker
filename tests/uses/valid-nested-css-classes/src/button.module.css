@@ -1,0 +1,21 @@
+.button {
+  color: red;
+
+  &.active {
+    color: blue;
+  }
+
+  & .icon {
+    display: inline-block;
+  }
+
+  .label {
+    font-weight: 600;
+  }
+
+  @media (min-width: 40rem) {
+    &.wide {
+      padding: 1rem;
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "missing-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "button.module.css",
+      "className": "one"
+    },
+    {
+      "code": "missing-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "button.module.css",
+      "className": "two"
+    }
+  ]
+}
