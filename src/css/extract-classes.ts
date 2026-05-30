@@ -4,7 +4,12 @@ import { getLocation } from "../locations.js";
 import type { SourceLocation } from "../types.js";
 
 export type CssClassExtraction =
-  | { ok: true; classes: Set<string>; locations: Map<string, SourceLocation> }
+  | {
+      ok: true;
+      classes: Set<string>;
+      emptyClasses: Set<string>;
+      locations: Map<string, SourceLocation>;
+    }
   | { ok: false; message: string; line: number; column: number };
 
 export function extractCssClasses(
@@ -20,9 +25,14 @@ export function extractCssClasses(
     });
     const exportedClasses = new Set(Object.keys(transformed.exports ?? {}));
     const classes = getStandaloneClasses(transformed.code, filename, exportedClasses);
+    const emptyClasses = getEmptyStandaloneClasses(source, filename);
     const locations = getClassLocations(source);
 
-    return { ok: true, classes, locations };
+    for (const className of emptyClasses) {
+      classes.add(className);
+    }
+
+    return { ok: true, classes, emptyClasses, locations };
   } catch (error) {
     const loc = getErrorLocation(error);
 
@@ -33,6 +43,29 @@ export function extractCssClasses(
       column: loc.column
     };
   }
+}
+
+function getEmptyStandaloneClasses(source: string, filename: string): Set<string> {
+  const classes = new Set<string>();
+
+  transform({
+    filename,
+    code: Buffer.from(source),
+    include: Features.Nesting,
+    visitor: {
+      Rule: {
+        style(rule) {
+          if (!isEmptyStyleRule(rule.value)) {
+            return;
+          }
+
+          collectStandaloneClasses(rule.value.selectors, undefined, classes);
+        }
+      }
+    }
+  });
+
+  return classes;
 }
 
 function getStandaloneClasses(
@@ -59,7 +92,7 @@ function getStandaloneClasses(
 
 function collectStandaloneClasses(
   selectorList: Selector[],
-  exportedClasses: Set<string>,
+  exportedClasses: Set<string> | undefined,
   classes: Set<string>
 ): void {
   for (const selector of selectorList) {
@@ -77,7 +110,7 @@ function collectStandaloneClasses(
       if (component.type === "class") {
         compoundClassCount += 1;
 
-        if (exportedClasses.has(component.name)) {
+        if (!exportedClasses || exportedClasses.has(component.name)) {
           exportedCompoundClass = component.name;
         }
       }
@@ -85,6 +118,17 @@ function collectStandaloneClasses(
 
     addStandaloneCompoundClass(compoundClassCount, exportedCompoundClass, classes);
   }
+}
+
+function isEmptyStyleRule(rule: {
+  declarations: { declarations: unknown[]; importantDeclarations: unknown[] };
+  rules: unknown[];
+}): boolean {
+  return (
+    rule.declarations.declarations.length === 0 &&
+    rule.declarations.importantDeclarations.length === 0 &&
+    rule.rules.length === 0
+  );
 }
 
 function addStandaloneCompoundClass(

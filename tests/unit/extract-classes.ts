@@ -139,4 +139,31 @@ describe("CSS class extraction", () => {
 
     expect([...result.classes].sort()).toEqual(["button"]);
   });
+
+  it("keeps standalone empty selectors as classes and marks them as empty", () => {
+    const source = `
+      .marker {
+        /* EMPTY */
+      }
+
+      .button {
+        color: red;
+      }
+
+      .one.two {
+        /* EMPTY */
+      }
+    `;
+
+    const result = extractCssClasses(source);
+
+    expect(result.ok).toBe(true);
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    expect([...result.classes].sort()).toEqual(["button", "marker"]);
+    expect([...result.emptyClasses].sort()).toEqual(["marker"]);
+  });
 });

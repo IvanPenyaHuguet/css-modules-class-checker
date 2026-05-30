@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "empty-css-module-selector",
+      "severity": "error",
+      "filePath": "button.module.css",
+      "cssModulePath": "button.module.css",
+      "className": "marker"
+    }
+  ]
+}

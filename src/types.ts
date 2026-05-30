@@ -6,6 +6,7 @@ export type DiagnosticCode =
   | "missing-css-module-class"
   | "unused-css-module-class"
   | "raw-css-module-class"
+  | "empty-css-module-selector"
   | "unresolved-dynamic-class"
   | "css-module-file-not-found"
   | "css-parse-error"
@@ -35,6 +36,7 @@ export type CheckOptions = {
   target?: string;
   ignore?: string[];
   ignoreClasses?: Array<string | RegExp>;
+  reportEmptySelectors?: boolean;
   rules?: RulesConfig;
 };
 

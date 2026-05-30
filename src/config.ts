@@ -6,6 +6,7 @@ export const defaultRules: Record<DiagnosticCode, RuleLevel> = {
   "missing-css-module-class": "error",
   "unused-css-module-class": "error",
   "raw-css-module-class": "error",
+  "empty-css-module-selector": "error",
   "unresolved-dynamic-class": "error",
   "css-module-file-not-found": "error",
   "css-parse-error": "error",

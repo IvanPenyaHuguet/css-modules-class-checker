@@ -35,6 +35,7 @@ css-modules-class-checker [target]
 ```bash
 --ignore <pattern...>       Ignore files or directories
 --ignore-class <name...>    Ignore specific class names
+--no-report-empty-selectors Do not report empty CSS Module selectors
 --rule <rule=level...>      Configure rules: off, warning, or error
 ```
 
@@ -50,6 +51,7 @@ Examples:
 ```bash
 css-modules-class-checker src --ignore generated
 css-modules-class-checker src --ignore-class legacy-global external
+css-modules-class-checker src --no-report-empty-selectors
 css-modules-class-checker src --rule unresolved-dynamic-class=warning
 ```
 
@@ -70,6 +72,7 @@ const result = await checkCssModules({
   target: "src",
   ignore: ["dist", "node_modules"],
   ignoreClasses: ["legacy-global", /^external-/],
+  reportEmptySelectors: true,
   rules: {
     "unresolved-dynamic-class": "warning"
   }
@@ -102,6 +105,7 @@ Each rule accepts `off`, `warning`, or `error`.
 | `missing-css-module-class`  | `error` | A class is used from a CSS Module but is not defined in that CSS file |
 | `unused-css-module-class`   | `error` | A class is defined in a CSS Module but is never used                  |
 | `raw-css-module-class`      | `error` | A CSS Module class is used as a raw `className` string                |
+| `empty-css-module-selector` | `error` | A CSS Module class is defined by a selector with no declarations      |
 | `unresolved-dynamic-class`  | `error` | A dynamic `styles[...]` access cannot be resolved statically          |
 | `css-module-file-not-found` | `error` | A `*.module.css` import points to a missing file                      |
 | `css-parse-error`           | `error` | A CSS Module file cannot be parsed                                    |
@@ -114,6 +118,7 @@ Each rule accepts `off`, `warning`, or `error`.
 | `missing-css-module-class`  | `styles.secondary` while only `.primary` exists                         |
 | `unused-css-module-class`   | `.secondary` exists but no source file uses it                          |
 | `raw-css-module-class`      | `className="primary"` when `.primary` belongs to an imported CSS Module |
+| `empty-css-module-selector` | `.marker { /* EMPTY */ }`                                               |
 | `unresolved-dynamic-class`  | `styles[getClassName()]`                                                |
 | `css-module-file-not-found` | `import styles from "./missing.module.css"`                             |
 | `css-parse-error`           | Unmatched braces in a CSS Module                                        |

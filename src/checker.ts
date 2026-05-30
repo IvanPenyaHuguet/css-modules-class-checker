@@ -18,6 +18,7 @@ import type {
 
 type CssModuleRecord = {
   classes: Set<string>;
+  emptyClasses: Set<string>;
   locations: Map<string, SourceLocation>;
   usedClasses: Set<string>;
   hasUnresolvedUsage: boolean;
@@ -83,6 +84,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
 
         cssModules.set(cssImport.cssModulePath, {
           classes: extracted.classes,
+          emptyClasses: extracted.emptyClasses,
           locations: extracted.locations,
           usedClasses: new Set(),
           hasUnresolvedUsage: false
@@ -171,6 +173,25 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
   }
 
   for (const [cssModulePath, cssModule] of cssModules) {
+    if (options.reportEmptySelectors !== false) {
+      for (const className of cssModule.emptyClasses) {
+        if (isIgnoredClass(className, options.ignoreClasses)) {
+          continue;
+        }
+
+        pushDiagnostic(diagnostics, rules, {
+          code: "empty-css-module-selector",
+          message: `Class "${className}" is defined by an empty selector in ${path.basename(
+            cssModulePath
+          )}.`,
+          filePath: cssModulePath,
+          cssModulePath,
+          className,
+          location: cssModule.locations.get(className) ?? { index: 0, line: 1, column: 1 }
+        });
+      }
+    }
+
     if (cssModule.hasUnresolvedUsage) {
       continue;
     }
