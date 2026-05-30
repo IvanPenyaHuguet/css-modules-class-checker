@@ -2,6 +2,7 @@
   "name": "css-modules-class-checker",
   "version": "0.0.0",
   "description": "Checks CSS Modules class usages in JavaScript and TypeScript projects.",
+  "license": "MIT",
   "bin": {
     "css-modules-class-checker": "./dist/cli.js"
   },
@@ -26,8 +27,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "commander": "15.0.0",
-    "oxc-parser": "0.133.0"
+    "commander": "^15.0.0",
+    "oxc-parser": "^0.133.0"
   },
   "devDependencies": {
     "@types/node": "24.1.0",
