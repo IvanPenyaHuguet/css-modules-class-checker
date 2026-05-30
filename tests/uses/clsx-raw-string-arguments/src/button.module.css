@@ -1,0 +1,11 @@
+.primary {
+  color: red;
+}
+
+.active {
+  color: blue;
+}
+
+.nested {
+  color: purple;
+}

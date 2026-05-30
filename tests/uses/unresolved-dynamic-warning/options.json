@@ -1,0 +1,5 @@
+{
+  "rules": {
+    "unresolved-dynamic-class": "warning"
+  }
+}

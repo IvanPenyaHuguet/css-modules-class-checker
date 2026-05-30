@@ -1,0 +1,19 @@
+.primary {
+  color: red;
+}
+
+.active {
+  color: blue;
+}
+
+.highlighted {
+  color: yellow;
+}
+
+.disabled {
+  color: gray;
+}
+
+.focused {
+  outline: 1px solid currentColor;
+}

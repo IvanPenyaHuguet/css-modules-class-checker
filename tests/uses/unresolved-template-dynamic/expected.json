@@ -1,0 +1,11 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "unresolved-dynamic-class",
+      "severity": "error",
+      "filePath": "grid.tsx",
+      "cssModulePath": "grid.module.css"
+    }
+  ]
+}

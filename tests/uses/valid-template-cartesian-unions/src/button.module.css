@@ -1,0 +1,15 @@
+.buttonPrimaryActive {
+  color: red;
+}
+
+.buttonPrimaryDisabled {
+  color: gray;
+}
+
+.buttonSecondaryActive {
+  color: blue;
+}
+
+.buttonSecondaryDisabled {
+  color: silver;
+}

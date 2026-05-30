@@ -1,0 +1,37 @@
+{
+  "name": "css-modules-class-checker",
+  "version": "0.0.0",
+  "description": "Checks CSS Modules class usages in JavaScript and TypeScript projects.",
+  "type": "module",
+  "bin": {
+    "css-modules-class-checker": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/cli.ts --format esm --dts --clean",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.1.0",
+    "tsup": "8.0.2",
+    "typescript": "5.4.3",
+    "vitest": "1.4.0"
+  },
+  "dependencies": {
+    "commander": "15.0.0",
+    "oxc-parser": "0.133.0"
+  }
+}

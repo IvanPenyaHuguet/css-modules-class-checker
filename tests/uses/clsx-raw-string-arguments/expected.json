@@ -1,0 +1,23 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "raw-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "className": "primary"
+    },
+    {
+      "code": "raw-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "className": "active"
+    },
+    {
+      "code": "raw-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "className": "nested"
+    }
+  ]
+}

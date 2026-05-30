@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "missing-css-module-class",
+      "severity": "error",
+      "filePath": "card.tsx",
+      "cssModulePath": "card.module.css",
+      "className": "shared"
+    }
+  ]
+}

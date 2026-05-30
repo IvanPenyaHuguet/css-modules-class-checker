@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "missing-css-module-class",
+      "severity": "error",
+      "filePath": "grid.tsx",
+      "cssModulePath": "grid.module.css",
+      "className": "gridTwo"
+    }
+  ]
+}
