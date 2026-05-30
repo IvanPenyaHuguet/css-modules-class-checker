@@ -4,10 +4,12 @@ import {
   getStaticPropertyName,
   getStringLiteralValue,
   isAstNode,
-  walkAst,
+  walkAst
 } from "./ast.js";
 
-export function createStaticResolver(program: AstNode): (expression: AstNode) => string[] | undefined {
+export function createStaticResolver(
+  program: AstNode
+): (expression: AstNode) => string[] | undefined {
   const constants = new Map<string, string[]>();
   const objectConstants = new Map<string, Map<string, string[]>>();
   const typeAliases = new Map<string, string[]>();
@@ -50,7 +52,7 @@ function collectTypeAlias(node: AstNode, typeAliases: Map<string, string[]>): vo
 
 function collectEnumDeclaration(
   node: AstNode,
-  objectConstants: Map<string, Map<string, string[]>>,
+  objectConstants: Map<string, Map<string, string[]>>
 ): void {
   const identifier = getIdentifierName(node.id);
   const members = isAstNode(node.body) && Array.isArray(node.body.members) ? node.body.members : [];
@@ -83,7 +85,7 @@ function collectEnumDeclaration(
 function collectVariableDeclarator(
   node: AstNode,
   constants: Map<string, string[]>,
-  objectConstants: Map<string, Map<string, string[]>>,
+  objectConstants: Map<string, Map<string, string[]>>
 ): void {
   const identifier = getIdentifierName(node.id);
 
@@ -108,7 +110,7 @@ function collectVariableDeclarator(
 function collectTypedBinding(
   node: AstNode,
   constants: Map<string, string[]>,
-  typeAliases: Map<string, string[]>,
+  typeAliases: Map<string, string[]>
 ): void {
   const identifier = getIdentifierName(node);
 
@@ -155,7 +157,7 @@ function collectTypedBinding(
 function resolveExpression(
   expression: AstNode,
   constants: Map<string, string[]>,
-  objectConstants: Map<string, Map<string, string[]>>,
+  objectConstants: Map<string, Map<string, string[]>>
 ): string[] | undefined {
   const literal = getStringLiteralValue(expression);
 
@@ -212,7 +214,7 @@ function resolveExpression(
 function resolveObjectExpression(
   expression: AstNode,
   constants: Map<string, string[]>,
-  objectConstants: Map<string, Map<string, string[]>>,
+  objectConstants: Map<string, Map<string, string[]>>
 ): Map<string, string[]> | undefined {
   const objectExpression =
     expression.type === "TSAsExpression" && isAstNode(expression.expression)
@@ -249,7 +251,7 @@ function resolveObjectExpression(
 function resolveTemplateLiteral(
   expression: AstNode,
   constants: Map<string, string[]>,
-  objectConstants: Map<string, Map<string, string[]>>,
+  objectConstants: Map<string, Map<string, string[]>>
 ): string[] | undefined {
   const quasis = Array.isArray(expression.quasis) ? expression.quasis : [];
   const expressions = Array.isArray(expression.expressions) ? expression.expressions : [];
@@ -290,7 +292,7 @@ function resolveTemplateLiteral(
     }
 
     results = results.flatMap((prefix) =>
-      resolvedExpressions[index].map((resolvedValue) => `${prefix}${resolvedValue}${nextQuasi}`),
+      resolvedExpressions[index].map((resolvedValue) => `${prefix}${resolvedValue}${nextQuasi}`)
     );
   }
 
@@ -314,7 +316,7 @@ function getTemplateQuasiValue(quasi: unknown): string | undefined {
 
 function resolveTypeAnnotation(
   annotation: AstNode,
-  typeAliases: Map<string, string[]>,
+  typeAliases: Map<string, string[]>
 ): string[] | undefined {
   const typeNode = getTypeAnnotationBody(annotation);
 

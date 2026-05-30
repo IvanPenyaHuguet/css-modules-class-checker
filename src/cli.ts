@@ -5,14 +5,14 @@ import { checkCssModules } from "./checker.js";
 import { renderTextReport } from "./reporters/text.js";
 import type { DiagnosticCode, RuleLevel, RulesConfig } from "./types.js";
 
-const validRuleLevels = new Set<RuleLevel>(["off", "warning", "error"]);
-const validRuleCodes = new Set<DiagnosticCode>([
+const validRuleLevels = new Set<string>(["off", "warning", "error"]);
+const validRuleCodes = new Set<string>([
   "missing-css-module-class",
   "raw-css-module-class",
   "unresolved-dynamic-class",
   "css-module-file-not-found",
   "css-parse-error",
-  "source-parse-error",
+  "source-parse-error"
 ]);
 
 type CliOptions = {
@@ -40,15 +40,14 @@ try {
     target,
     ignore: cliOptions.ignore,
     ignoreClasses: cliOptions.ignoreClass,
-    rules,
+    rules
   });
 
   console.log(renderTextReport(result, path.resolve(target)));
   process.exitCode = result.status === "FAIL" ? 1 : 0;
 } catch (error) {
-  const exitCode = typeof error === "object" && error !== null && "exitCode" in error
-    ? Number(error.exitCode)
-    : 2;
+  const exitCode =
+    typeof error === "object" && error !== null && "exitCode" in error ? Number(error.exitCode) : 2;
 
   if (exitCode !== 0) {
     console.error(error instanceof Error ? error.message : String(error));
@@ -63,12 +62,20 @@ function parseRules(values: string[]): RulesConfig {
   for (const value of values) {
     const [code, level] = value.split("=");
 
-    if (!validRuleCodes.has(code as DiagnosticCode) || !validRuleLevels.has(level as RuleLevel)) {
+    if (!isDiagnosticCode(code) || !isRuleLevel(level)) {
       throw new InvalidArgumentError(`Invalid rule "${value}". Expected rule=off|warning|error.`);
     }
 
-    rules[code as DiagnosticCode] = level as RuleLevel;
+    rules[code] = level;
   }
 
   return rules;
+}
+
+function isDiagnosticCode(value: string | undefined): value is DiagnosticCode {
+  return typeof value === "string" && validRuleCodes.has(value);
+}
+
+function isRuleLevel(value: string | undefined): value is RuleLevel {
+  return typeof value === "string" && validRuleLevels.has(value);
 }

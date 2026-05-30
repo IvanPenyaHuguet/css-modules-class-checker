@@ -1,16 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { parseSourceFile } from "../../src/source/parse.js";
-import {
-  findCssModuleClassUsages,
-  findRawClassNameUsages,
-} from "../../src/source/class-usages.js";
+import { findCssModuleClassUsages, findRawClassNameUsages } from "../../src/source/class-usages.js";
 import type { CssModuleImport } from "../../src/types.js";
 
 const cssImport: CssModuleImport = {
   localName: "styles",
   importPath: "./button.module.css",
   cssModulePath: "/project/button.module.css",
-  index: 0,
+  index: 0
 };
 
 describe("class usage extraction", () => {
@@ -60,7 +57,7 @@ describe("class usage extraction", () => {
       "three",
       "four-five",
       "six",
-      "seven",
+      "seven"
     ]);
   });
 });
@@ -75,8 +72,6 @@ function parseProgram(source: string) {
   return parsed.program;
 }
 
-function resolvedClassNames(
-  usages: ReturnType<typeof findCssModuleClassUsages>,
-): string[] {
+function resolvedClassNames(usages: ReturnType<typeof findCssModuleClassUsages>): string[] {
   return usages.flatMap((usage) => (usage.kind === "resolved" ? [usage.className] : []));
 }

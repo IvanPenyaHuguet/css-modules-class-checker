@@ -55,11 +55,11 @@ css-modules-class-checker src --rule unresolved-dynamic-class=warning
 
 Exit codes:
 
-| Code | Meaning |
-| --- | --- |
-| `0` | No error diagnostics were found |
-| `1` | Error diagnostics were found |
-| `2` | CLI configuration or runtime error |
+| Code | Meaning                            |
+| ---- | ---------------------------------- |
+| `0`  | No error diagnostics were found    |
+| `1`  | Error diagnostics were found       |
+| `2`  | CLI configuration or runtime error |
 
 ## API Usage
 
@@ -71,8 +71,8 @@ const result = await checkCssModules({
   ignore: ["dist", "node_modules"],
   ignoreClasses: ["legacy-global", /^external-/],
   rules: {
-    "unresolved-dynamic-class": "warning",
-  },
+    "unresolved-dynamic-class": "warning"
+  }
 });
 
 console.log(result.status);
@@ -97,25 +97,25 @@ least one emitted diagnostic has severity `"error"`.
 
 Each rule accepts `off`, `warning`, or `error`.
 
-| Rule | Default | Meaning |
-| --- | --- | --- |
-| `missing-css-module-class` | `error` | A class is used from a CSS Module but is not defined in that CSS file |
-| `raw-css-module-class` | `error` | A CSS Module class is used as a raw `className` string |
-| `unresolved-dynamic-class` | `error` | A dynamic `styles[...]` access cannot be resolved statically |
-| `css-module-file-not-found` | `error` | A `*.module.css` import points to a missing file |
-| `css-parse-error` | `error` | A CSS Module file cannot be parsed |
-| `source-parse-error` | `error` | A source file cannot be parsed |
+| Rule                        | Default | Meaning                                                               |
+| --------------------------- | ------- | --------------------------------------------------------------------- |
+| `missing-css-module-class`  | `error` | A class is used from a CSS Module but is not defined in that CSS file |
+| `raw-css-module-class`      | `error` | A CSS Module class is used as a raw `className` string                |
+| `unresolved-dynamic-class`  | `error` | A dynamic `styles[...]` access cannot be resolved statically          |
+| `css-module-file-not-found` | `error` | A `*.module.css` import points to a missing file                      |
+| `css-parse-error`           | `error` | A CSS Module file cannot be parsed                                    |
+| `source-parse-error`        | `error` | A source file cannot be parsed                                        |
 
 ## Diagnostics
 
-| Code | Example |
-| --- | --- |
-| `missing-css-module-class` | `styles.secondary` while only `.primary` exists |
-| `raw-css-module-class` | `className="primary"` when `.primary` belongs to an imported CSS Module |
-| `unresolved-dynamic-class` | `styles[getClassName()]` |
-| `css-module-file-not-found` | `import styles from "./missing.module.css"` |
-| `css-parse-error` | Unmatched braces in a CSS Module |
-| `source-parse-error` | Reserved for source parser failures |
+| Code                        | Example                                                                 |
+| --------------------------- | ----------------------------------------------------------------------- |
+| `missing-css-module-class`  | `styles.secondary` while only `.primary` exists                         |
+| `raw-css-module-class`      | `className="primary"` when `.primary` belongs to an imported CSS Module |
+| `unresolved-dynamic-class`  | `styles[getClassName()]`                                                |
+| `css-module-file-not-found` | `import styles from "./missing.module.css"`                             |
+| `css-parse-error`           | Unmatched braces in a CSS Module                                        |
+| `source-parse-error`        | Reserved for source parser failures                                     |
 
 ## Supported Patterns
 
@@ -139,7 +139,7 @@ const classMap = { primary: "primary" } as const;
 styles[classMap.primary];
 
 enum VariantClass {
-  Primary = "primary",
+  Primary = "primary"
 }
 styles[VariantClass.Primary];
 

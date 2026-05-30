@@ -143,17 +143,17 @@ Dynamic usage must not all be treated the same.
 Resolvable and checkable cases:
 
 ```tsx
-styles["primary"]
-styles[`primary`]
+styles["primary"];
+styles[`primary`];
 const kind = "primary";
-styles[kind]
+styles[kind];
 ```
 
 Partially resolvable cases:
 
 ```tsx
 const kind = active ? "primary" : "secondary";
-styles[kind]
+styles[kind];
 ```
 
 For these cases, all known static alternatives must be checked.
@@ -161,9 +161,9 @@ For these cases, all known static alternatives must be checked.
 Non-resolvable cases:
 
 ```tsx
-styles[dynamicClass]
-styles[getClassName()]
-styles[prefix + suffix]
+styles[dynamicClass];
+styles[getClassName()];
+styles[prefix + suffix];
 ```
 
 These usages must not produce false `missing-css-module-class` errors. In V1 they produce `unresolved-dynamic-class` according to the configured rule level. By default this is an error.
@@ -249,8 +249,8 @@ const result = await checkCssModules({
   ignore: ["dist", "node_modules"],
   ignoreClasses: ["legacy-global", /^external-/],
   rules: {
-    "unresolved-dynamic-class": "warning",
-  },
+    "unresolved-dynamic-class": "warning"
+  }
 });
 
 console.log(result.status);

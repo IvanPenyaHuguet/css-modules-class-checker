@@ -7,7 +7,7 @@ export function Button({ active }: { active: boolean }) {
       className={classNames(
         styles.primary,
         [styles.active, [styles.nested]],
-        active ? styles.enabled : styles.disabled,
+        active ? styles.enabled : styles.disabled
       )}
     />
   );

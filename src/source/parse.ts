@@ -3,6 +3,7 @@ import { parseSync } from "oxc-parser";
 import type { SourceLocation } from "../types.js";
 import { getLocation } from "../locations.js";
 import type { AstNode } from "./ast.js";
+import { isAstNode } from "./ast.js";
 
 export type SourceParseResult =
   | { ok: true; program: AstNode }
@@ -13,7 +14,7 @@ export function parseSourceFile(filePath: string, source: string): SourceParseRe
     const result = parseSync(filePath, source, {
       lang: getParserLang(filePath),
       sourceType: "module",
-      astType: "ts",
+      astType: "ts"
     });
 
     if (result.errors.length > 0) {
@@ -23,16 +24,24 @@ export function parseSourceFile(filePath: string, source: string): SourceParseRe
       return {
         ok: false,
         message: firstError.message,
-        location: getLocation(source, labelStart),
+        location: getLocation(source, labelStart)
       };
     }
 
-    return { ok: true, program: result.program as unknown as AstNode };
+    if (!isAstNode(result.program)) {
+      return {
+        ok: false,
+        message: "Parser did not return a valid program AST.",
+        location: { index: 0, line: 1, column: 1 }
+      };
+    }
+
+    return { ok: true, program: result.program };
   } catch (error) {
     return {
       ok: false,
       message: error instanceof Error ? error.message : String(error),
-      location: { index: 0, line: 1, column: 1 },
+      location: { index: 0, line: 1, column: 1 }
     };
   }
 }

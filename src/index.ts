@@ -7,5 +7,5 @@ export type {
   Diagnostic,
   DiagnosticCode,
   RuleLevel,
-  RulesConfig,
+  RulesConfig
 } from "./types.js";

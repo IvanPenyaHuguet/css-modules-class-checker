@@ -12,7 +12,7 @@ export function renderTextReport(result: CheckResult, root = process.cwd()): str
   lines.push(
     result.status === "FAIL"
       ? "CSS Modules check failed."
-      : "CSS Modules check completed with warnings.",
+      : "CSS Modules check completed with warnings."
   );
 
   for (const [filePath, diagnostics] of grouped) {

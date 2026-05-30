@@ -7,6 +7,6 @@ export function getLocation(source: string, index: number): SourceLocation {
   return {
     index,
     line: lines.length,
-    column: lines.at(-1)!.length + 1,
+    column: lines.at(-1)!.length + 1
   };
 }

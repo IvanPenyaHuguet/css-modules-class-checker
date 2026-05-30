@@ -7,7 +7,7 @@ describe("ignoreClasses", () => {
     const target = path.resolve("tests/uses/ignore-class-regexp/src");
     const result = await checkCssModules({
       target,
-      ignoreClasses: [/^external-/],
+      ignoreClasses: [/^external-/]
     });
 
     expect(result.status).toBe("SUCCESS");

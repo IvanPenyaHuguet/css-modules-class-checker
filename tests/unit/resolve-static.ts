@@ -16,7 +16,12 @@ describe("createStaticResolver", () => {
     `);
 
     expect(resolved).toEqual([
-      ["buttonPrimaryActive", "buttonPrimaryDisabled", "buttonSecondaryActive", "buttonSecondaryDisabled"],
+      [
+        "buttonPrimaryActive",
+        "buttonPrimaryDisabled",
+        "buttonSecondaryActive",
+        "buttonSecondaryDisabled"
+      ]
     ]);
   });
 

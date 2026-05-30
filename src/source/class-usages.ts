@@ -1,12 +1,7 @@
 import { getLocation } from "../locations.js";
 import type { ClassUsage, CssModuleImport, SourceLocation } from "../types.js";
 import type { AstNode } from "./ast.js";
-import {
-  getIdentifierName,
-  getStringLiteralValue,
-  isAstNode,
-  walkAst,
-} from "./ast.js";
+import { getIdentifierName, getStringLiteralValue, isAstNode, walkAst } from "./ast.js";
 import { createStaticResolver } from "./resolve-static.js";
 
 type RawClassUsage = {
@@ -17,7 +12,7 @@ type RawClassUsage = {
 export function findCssModuleClassUsages(
   source: string,
   program: AstNode,
-  imports: CssModuleImport[],
+  imports: CssModuleImport[]
 ): ClassUsage[] {
   const usages: ClassUsage[] = [];
   const resolveStatic = createStaticResolver(program);
@@ -49,7 +44,7 @@ export function findCssModuleClassUsages(
         localName: cssImport.localName,
         className,
         cssModulePath: cssImport.cssModulePath,
-        location,
+        location
       });
       return;
     }
@@ -65,7 +60,7 @@ export function findCssModuleClassUsages(
         kind: "unresolved",
         localName: cssImport.localName,
         cssModulePath: cssImport.cssModulePath,
-        location,
+        location
       });
       return;
     }
@@ -76,7 +71,7 @@ export function findCssModuleClassUsages(
         localName: cssImport.localName,
         className,
         cssModulePath: cssImport.cssModulePath,
-        location,
+        location
       });
     }
   });
@@ -109,38 +104,47 @@ export function findRawClassNameUsages(source: string, program: AstNode): RawCla
       return;
     }
 
-    walkAst(value.expression, (expressionNode, expressionAncestors) => {
-      if (isComputedMemberProperty(expressionNode, expressionAncestors)) {
-        return;
-      }
-
-      if (isStaticObjectPropertyKey(expressionNode, expressionAncestors)) {
-        return;
-      }
-
-      if (expressionNode.type === "Property" && expressionNode.computed !== true) {
-        const key = getStaticClassObjectKey(expressionNode);
-
-        if (key !== undefined) {
-          pushClassTokens(usages, source, key, expressionNode.start ?? value.start ?? 0);
+    walkAst(
+      value.expression,
+      (expressionNode, expressionAncestors) => {
+        if (isComputedMemberProperty(expressionNode, expressionAncestors)) {
+          return;
         }
-      }
 
-      const stringValue = getStringLiteralValue(expressionNode);
-
-      if (stringValue !== undefined) {
-        pushClassTokens(usages, source, stringValue, expressionNode.start ?? value.start ?? 0);
-        return;
-      }
-
-      if (expressionNode.type === "TemplateLiteral") {
-        const templateValue = getStaticTemplateValue(expressionNode);
-
-        if (templateValue !== undefined) {
-          pushClassTokens(usages, source, templateValue, expressionNode.start ?? value.start ?? 0);
+        if (isStaticObjectPropertyKey(expressionNode, expressionAncestors)) {
+          return;
         }
-      }
-    }, ancestors);
+
+        if (expressionNode.type === "Property" && expressionNode.computed !== true) {
+          const key = getStaticClassObjectKey(expressionNode);
+
+          if (key !== undefined) {
+            pushClassTokens(usages, source, key, expressionNode.start ?? value.start ?? 0);
+          }
+        }
+
+        const stringValue = getStringLiteralValue(expressionNode);
+
+        if (stringValue !== undefined) {
+          pushClassTokens(usages, source, stringValue, expressionNode.start ?? value.start ?? 0);
+          return;
+        }
+
+        if (expressionNode.type === "TemplateLiteral") {
+          const templateValue = getStaticTemplateValue(expressionNode);
+
+          if (templateValue !== undefined) {
+            pushClassTokens(
+              usages,
+              source,
+              templateValue,
+              expressionNode.start ?? value.start ?? 0
+            );
+          }
+        }
+      },
+      ancestors
+    );
   });
 
   return usages;
@@ -158,7 +162,9 @@ function isClassNameAttribute(node: AstNode): node is AstNode & { value: unknown
 function isComputedMemberProperty(node: AstNode, ancestors: AstNode[]): boolean {
   const parent = ancestors.at(-1);
 
-  return parent?.type === "MemberExpression" && parent.computed === true && parent.property === node;
+  return (
+    parent?.type === "MemberExpression" && parent.computed === true && parent.property === node
+  );
 }
 
 function isStaticObjectPropertyKey(node: AstNode, ancestors: AstNode[]): boolean {
@@ -188,7 +194,8 @@ function getStaticTemplateValue(node: AstNode): string | undefined {
     return undefined;
   }
 
-  const quasi = Array.isArray(node.quasis) && isAstNode(node.quasis[0]) ? node.quasis[0] : undefined;
+  const quasi =
+    Array.isArray(node.quasis) && isAstNode(node.quasis[0]) ? node.quasis[0] : undefined;
   const value = quasi?.value;
 
   return typeof value === "object" &&
@@ -203,14 +210,14 @@ function pushClassTokens(
   usages: RawClassUsage[],
   source: string,
   value: string,
-  index: number,
+  index: number
 ): void {
   const tokens = value.split(/\s+/).filter(Boolean);
 
   for (const token of tokens) {
     usages.push({
       className: token,
-      location: getLocation(source, index),
+      location: getLocation(source, index)
     });
   }
 }

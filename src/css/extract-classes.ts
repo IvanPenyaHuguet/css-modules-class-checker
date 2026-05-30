@@ -10,7 +10,7 @@ export function extractCssClasses(source: string): CssClassExtraction {
       ok: false,
       message: "CSS parse error: unmatched braces.",
       line: 1,
-      column: 1,
+      column: 1
     };
   }
 

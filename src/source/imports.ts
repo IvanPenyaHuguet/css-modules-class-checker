@@ -1,7 +1,7 @@
 import path from "node:path";
 import type { CssModuleImport } from "../types.js";
 import type { AstNode } from "./ast.js";
-import { getIdentifierName, getStringLiteralValue } from "./ast.js";
+import { getIdentifierName, getStringLiteralValue, isAstNode } from "./ast.js";
 
 export function findCssModuleImports(program: AstNode, filePath: string): CssModuleImport[] {
   const imports: CssModuleImport[] = [];
@@ -22,7 +22,9 @@ export function findCssModuleImports(program: AstNode, filePath: string): CssMod
       return isAstImportSpecifier(specifier) && specifier.type === "ImportDefaultSpecifier";
     });
     const localName = getIdentifierName(
-      defaultSpecifier && isAstImportSpecifier(defaultSpecifier) ? defaultSpecifier.local : undefined,
+      defaultSpecifier && isAstImportSpecifier(defaultSpecifier)
+        ? defaultSpecifier.local
+        : undefined
     );
 
     if (!localName) {
@@ -33,7 +35,7 @@ export function findCssModuleImports(program: AstNode, filePath: string): CssMod
       localName,
       importPath,
       cssModulePath: path.resolve(path.dirname(filePath), importPath),
-      index: statement.start ?? 0,
+      index: statement.start ?? 0
     });
   }
 
@@ -44,14 +46,9 @@ function isImportDeclaration(node: unknown): node is AstNode & {
   source: unknown;
   specifiers: unknown[];
 } {
-  return (
-    typeof node === "object" &&
-    node !== null &&
-    (node as AstNode).type === "ImportDeclaration" &&
-    Array.isArray((node as AstNode).specifiers)
-  );
+  return isAstNode(node) && node.type === "ImportDeclaration" && Array.isArray(node.specifiers);
 }
 
 function isAstImportSpecifier(node: unknown): node is AstNode & { local: unknown } {
-  return typeof node === "object" && node !== null && "local" in node;
+  return isAstNode(node) && "local" in node;
 }

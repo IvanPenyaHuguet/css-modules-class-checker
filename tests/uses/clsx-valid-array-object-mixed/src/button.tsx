@@ -9,12 +9,12 @@ export function Button({ active, disabled }: { active: boolean; disabled: boolea
         [styles.active, active && styles.highlighted],
         {
           [styles.disabled]: disabled,
-          [styles.focused]: active,
+          [styles.focused]: active
         },
         false,
         null,
         undefined,
-        0,
+        0
       )}
     />
   );

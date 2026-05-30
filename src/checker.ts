@@ -6,17 +6,14 @@ import { extractCssClasses } from "./css/extract-classes.js";
 import { findSourceFiles } from "./files.js";
 import { findCssModuleImports } from "./source/imports.js";
 import { parseSourceFile } from "./source/parse.js";
-import {
-  findCssModuleClassUsages,
-  findRawClassNameUsages,
-} from "./source/class-usages.js";
+import { findCssModuleClassUsages, findRawClassNameUsages } from "./source/class-usages.js";
 import type {
   CheckOptions,
   CheckResult,
   Diagnostic,
   DiagnosticCode,
   RuleLevel,
-  SourceLocation,
+  SourceLocation
 } from "./types.js";
 
 type CssModuleRecord = {
@@ -39,7 +36,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
         code: "source-parse-error",
         message: parsedSource.message,
         filePath,
-        location: parsedSource.location,
+        location: parsedSource.location
       });
       continue;
     }
@@ -59,7 +56,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
           message: `CSS Module file not found: ${cssImport.importPath}.`,
           filePath,
           cssModulePath: cssImport.cssModulePath,
-          location: { index: cssImport.index, line: 1, column: 1 },
+          location: { index: cssImport.index, line: 1, column: 1 }
         });
         shouldAnalyzeUsages = false;
         continue;
@@ -75,7 +72,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
             message: extracted.message,
             filePath,
             cssModulePath: cssImport.cssModulePath,
-            location: { index: cssImport.index, line: extracted.line, column: extracted.column },
+            location: { index: cssImport.index, line: extracted.line, column: extracted.column }
           });
           shouldAnalyzeUsages = false;
           continue;
@@ -110,7 +107,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
           message: `Cannot statically resolve dynamic class access on ${usage.localName}.`,
           filePath,
           cssModulePath: usage.cssModulePath,
-          location: usage.location,
+          location: usage.location
         });
         continue;
       }
@@ -128,13 +125,16 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
           filePath,
           cssModulePath: usage.cssModulePath,
           className: usage.className,
-          location: usage.location,
+          location: usage.location
         });
       }
     }
 
     for (const rawUsage of findRawClassNameUsages(source, parsedSource.program)) {
-      if (!moduleClassNames.has(rawUsage.className) || isIgnoredClass(rawUsage.className, options.ignoreClasses)) {
+      if (
+        !moduleClassNames.has(rawUsage.className) ||
+        isIgnoredClass(rawUsage.className, options.ignoreClasses)
+      ) {
         continue;
       }
 
@@ -143,7 +143,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
         message: `CSS Module class "${rawUsage.className}" is used as a raw class string.`,
         filePath,
         className: rawUsage.className,
-        location: rawUsage.location,
+        location: rawUsage.location
       });
     }
   }
@@ -152,7 +152,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
     status: diagnostics.some((diagnostic) => diagnostic.severity === "error") ? "FAIL" : "SUCCESS",
     errors: diagnostics,
     filesChecked: sourceFiles.length,
-    cssModulesChecked: cssModules.size,
+    cssModulesChecked: cssModules.size
   };
 }
 
@@ -166,7 +166,7 @@ function pushDiagnostic(
     location: SourceLocation;
     cssModulePath?: string;
     className?: string;
-  },
+  }
 ): void {
   const level = rules[input.code];
 
@@ -182,7 +182,7 @@ function pushDiagnostic(
     line: input.location.line,
     column: input.location.column,
     cssModulePath: input.cssModulePath,
-    className: input.className,
+    className: input.className
   });
 }
 

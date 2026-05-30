@@ -2,9 +2,11 @@ import styles from "./button.module.css";
 
 const classMap = {
   primary: "primary",
-  secondary: "secondary",
+  secondary: "secondary"
 } as const;
 
 export function Button() {
-  return <button className={styles[classMap.primary]} data-secondary={styles[classMap.secondary]} />;
+  return (
+    <button className={styles[classMap.primary]} data-secondary={styles[classMap.secondary]} />
+  );
 }

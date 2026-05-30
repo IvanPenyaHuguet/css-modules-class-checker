@@ -2,7 +2,7 @@ import styles from "./button.module.css";
 
 enum Variant {
   Primary = "primary",
-  Secondary = "secondary",
+  Secondary = "secondary"
 }
 
 export function Button() {

@@ -18,14 +18,17 @@ type ExpectedResult = {
 
 describe("use cases", async () => {
   const entries = await readdir(usesRoot, { withFileTypes: true });
-  const cases = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+  const cases = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
 
   for (const caseName of cases) {
     it(caseName, async () => {
       const caseRoot = path.join(usesRoot, caseName);
       const target = path.join(caseRoot, "src");
       const expected = JSON.parse(
-        await readFile(path.join(caseRoot, "expected.json"), "utf8"),
+        await readFile(path.join(caseRoot, "expected.json"), "utf8")
       ) as ExpectedResult;
       const options = await readOptions(caseRoot);
       const result = await checkCssModules({ ...options, target });
@@ -54,8 +57,8 @@ function normalizeResult(result: CheckResult, target: string): ExpectedResult {
       severity: error.severity,
       filePath: toRelative(target, error.filePath),
       ...(error.cssModulePath ? { cssModulePath: toRelative(target, error.cssModulePath) } : {}),
-      ...(error.className ? { className: error.className } : {}),
-    })),
+      ...(error.className ? { className: error.className } : {})
+    }))
   };
 }
 

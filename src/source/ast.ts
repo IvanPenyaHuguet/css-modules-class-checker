@@ -8,7 +8,7 @@ export type AstNode = {
 export function walkAst(
   node: unknown,
   visit: (node: AstNode, ancestors: AstNode[]) => void,
-  ancestors: AstNode[] = [],
+  ancestors: AstNode[] = []
 ): void {
   if (!isAstNode(node)) {
     return;
