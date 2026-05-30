@@ -132,3 +132,6 @@ detection.
 - Non-resolvable dynamic classes such as `styles[getClassName()]` are reported
   as `unresolved-dynamic-class` instead of being guessed.
 - Raw string detection is scoped to files that import a CSS Module.
+- Classes inside CSS Modules `:global(...)` selectors are ignored as local
+  module classes. Mixed local/global compound selectors are not exhaustively
+  modeled.

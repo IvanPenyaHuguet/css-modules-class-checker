@@ -63,27 +63,37 @@ function collectStandaloneClasses(
   classes: Set<string>
 ): void {
   for (const selector of selectorList) {
-    let compoundClasses: string[] = [];
+    let compoundClassCount = 0;
+    let exportedCompoundClass: string | undefined;
 
     for (const component of selector) {
       if (component.type === "combinator") {
-        addStandaloneCompoundClasses(compoundClasses, classes);
-        compoundClasses = [];
+        addStandaloneCompoundClass(compoundClassCount, exportedCompoundClass, classes);
+        compoundClassCount = 0;
+        exportedCompoundClass = undefined;
         continue;
       }
 
-      if (component.type === "class" && exportedClasses.has(component.name)) {
-        compoundClasses.push(component.name);
+      if (component.type === "class") {
+        compoundClassCount += 1;
+
+        if (exportedClasses.has(component.name)) {
+          exportedCompoundClass = component.name;
+        }
       }
     }
 
-    addStandaloneCompoundClasses(compoundClasses, classes);
+    addStandaloneCompoundClass(compoundClassCount, exportedCompoundClass, classes);
   }
 }
 
-function addStandaloneCompoundClasses(compoundClasses: string[], classes: Set<string>): void {
-  if (compoundClasses.length === 1) {
-    classes.add(compoundClasses[0]);
+function addStandaloneCompoundClass(
+  compoundClassCount: number,
+  exportedClass: string | undefined,
+  classes: Set<string>
+): void {
+  if (compoundClassCount === 1 && exportedClass) {
+    classes.add(exportedClass);
   }
 }
 

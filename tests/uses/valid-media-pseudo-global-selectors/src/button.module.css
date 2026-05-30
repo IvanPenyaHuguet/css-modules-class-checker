@@ -1,0 +1,25 @@
+.button:hover {
+  color: red;
+}
+
+.button:has(.icon) {
+  color: blue;
+}
+
+.button:not(.disabled) {
+  color: green;
+}
+
+.button :global(.external) {
+  color: purple;
+}
+
+:global(.reset) .button {
+  color: orange;
+}
+
+@media (min-width: 40rem) {
+  .responsive {
+    display: grid;
+  }
+}
