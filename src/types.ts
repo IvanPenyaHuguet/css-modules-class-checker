@@ -36,7 +36,6 @@ export type CheckOptions = {
   target?: string;
   ignore?: string[];
   ignoreClasses?: Array<string | RegExp>;
-  reportEmptySelectors?: boolean;
   rules?: RulesConfig;
 };
 

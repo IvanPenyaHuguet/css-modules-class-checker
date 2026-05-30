@@ -20,7 +20,6 @@ const validRuleCodes = new Set<string>([
 type CliOptions = {
   ignore?: string[];
   ignoreClass?: string[];
-  reportEmptySelectors?: boolean;
   rule?: string[];
 };
 
@@ -30,7 +29,6 @@ const program = new Command()
   .argument("[target]", "target directory", ".")
   .option("--ignore <pattern...>", "ignore files or directories")
   .option("--ignore-class <name...>", "ignore specific class names")
-  .option("--no-report-empty-selectors", "do not report empty CSS Module selectors")
   .option("--rule <rule=level...>", "configure rules: off, warning, or error")
   .exitOverride();
 
@@ -44,7 +42,6 @@ try {
     target,
     ignore: cliOptions.ignore,
     ignoreClasses: cliOptions.ignoreClass,
-    reportEmptySelectors: cliOptions.reportEmptySelectors,
     rules
   });
 

@@ -173,23 +173,21 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
   }
 
   for (const [cssModulePath, cssModule] of cssModules) {
-    if (options.reportEmptySelectors !== false) {
-      for (const className of cssModule.emptyClasses) {
-        if (isIgnoredClass(className, options.ignoreClasses)) {
-          continue;
-        }
-
-        pushDiagnostic(diagnostics, rules, {
-          code: "empty-css-module-selector",
-          message: `Class "${className}" is defined by an empty selector in ${path.basename(
-            cssModulePath
-          )}.`,
-          filePath: cssModulePath,
-          cssModulePath,
-          className,
-          location: cssModule.locations.get(className) ?? { index: 0, line: 1, column: 1 }
-        });
+    for (const className of cssModule.emptyClasses) {
+      if (isIgnoredClass(className, options.ignoreClasses)) {
+        continue;
       }
+
+      pushDiagnostic(diagnostics, rules, {
+        code: "empty-css-module-selector",
+        message: `Class "${className}" is defined by an empty selector in ${path.basename(
+          cssModulePath
+        )}.`,
+        filePath: cssModulePath,
+        cssModulePath,
+        className,
+        location: cssModule.locations.get(className) ?? { index: 0, line: 1, column: 1 }
+      });
     }
 
     if (cssModule.hasUnresolvedUsage) {

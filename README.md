@@ -35,7 +35,6 @@ css-modules-class-checker [target]
 ```bash
 --ignore <pattern...>       Ignore files or directories
 --ignore-class <name...>    Ignore specific class names
---no-report-empty-selectors Do not report empty CSS Module selectors
 --rule <rule=level...>      Configure rules: off, warning, or error
 ```
 
@@ -51,8 +50,8 @@ Examples:
 ```bash
 css-modules-class-checker src --ignore generated
 css-modules-class-checker src --ignore-class legacy-global external
-css-modules-class-checker src --no-report-empty-selectors
 css-modules-class-checker src --rule unresolved-dynamic-class=warning
+css-modules-class-checker src --rule empty-css-module-selector=off
 ```
 
 Exit codes:
@@ -72,7 +71,6 @@ const result = await checkCssModules({
   target: "src",
   ignore: ["dist", "node_modules"],
   ignoreClasses: ["legacy-global", /^external-/],
-  reportEmptySelectors: true,
   rules: {
     "unresolved-dynamic-class": "warning"
   }
@@ -126,17 +124,12 @@ Each rule accepts `off`, `warning`, or `error`.
 
 ## Supported Patterns
 
-See [Supported Patterns](docs/supported-patterns.md) for examples of supported
-CSS Module access patterns, `clsx`/`classnames` usage, and raw class string
-detection.
+See [Supported Patterns](docs/supported-patterns.md) for examples of supported CSS Module access patterns, `clsx`/`classnames` usage, and raw class string detection.
 
 ## Known Limitations
 
-- Only `*.module.css` files are supported. SCSS, SASS, LESS, Stylus, and other
-  preprocessors are out of scope.
-- Non-resolvable dynamic classes such as `styles[getClassName()]` are reported
-  as `unresolved-dynamic-class` instead of being guessed.
+- Only `*.module.css` files are supported. SCSS, SASS, LESS, Stylus, and other preprocessors are out of scope.
+- Non-resolvable dynamic classes such as `styles[getClassName()]` are reported as `unresolved-dynamic-class` instead of being guessed.
 - Raw string detection is scoped to files that import a CSS Module.
-- Classes inside CSS Modules `:global(...)` selectors are ignored as local
-  module classes. Mixed local/global compound selectors are not exhaustively
-  modeled.
+- ID selectors and HTML tag selectors are not checked, and the checker cannot reliably know whether nested selectors are satisfied by rendered `children`. Selectors that depend on child ids or HTML tags may be reported as false positives.
+- Classes inside CSS Modules `:global(...)` selectors are ignored as local module classes. Mixed local/global compound selectors are not exhaustively modeled.

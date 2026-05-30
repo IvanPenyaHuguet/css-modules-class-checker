@@ -1,3 +1,5 @@
 {
-  "reportEmptySelectors": false
+  "rules": {
+    "empty-css-module-selector": "off"
+  }
 }
