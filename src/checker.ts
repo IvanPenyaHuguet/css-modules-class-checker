@@ -18,6 +18,9 @@ import type {
 
 type CssModuleRecord = {
   classes: Set<string>;
+  locations: Map<string, SourceLocation>;
+  usedClasses: Set<string>;
+  hasUnresolvedUsage: boolean;
 };
 
 export async function checkCssModules(options: CheckOptions = {}): Promise<CheckResult> {
@@ -78,7 +81,12 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
           continue;
         }
 
-        cssModules.set(cssImport.cssModulePath, { classes: extracted.classes });
+        cssModules.set(cssImport.cssModulePath, {
+          classes: extracted.classes,
+          locations: extracted.locations,
+          usedClasses: new Set(),
+          hasUnresolvedUsage: false
+        });
       }
     }
 
@@ -102,6 +110,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
 
     for (const usage of findCssModuleClassUsages(source, parsedSource.program, imports)) {
       if (usage.kind === "unresolved") {
+        cssModules.get(usage.cssModulePath)!.hasUnresolvedUsage = true;
         pushDiagnostic(diagnostics, rules, {
           code: "unresolved-dynamic-class",
           message: `Cannot statically resolve dynamic class access on ${usage.localName}.`,
@@ -118,7 +127,12 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
 
       const cssModule = cssModules.get(usage.cssModulePath);
 
-      if (cssModule && !cssModule.classes.has(usage.className)) {
+      if (cssModule?.classes.has(usage.className)) {
+        cssModule.usedClasses.add(usage.className);
+        continue;
+      }
+
+      if (cssModule) {
         pushDiagnostic(diagnostics, rules, {
           code: "missing-css-module-class",
           message: `Class "${usage.className}" is not defined in ${path.basename(usage.cssModulePath)}.`,
@@ -138,12 +152,44 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
         continue;
       }
 
+      for (const cssImport of imports) {
+        const cssModule = cssModules.get(cssImport.cssModulePath);
+
+        if (cssModule?.classes.has(rawUsage.className)) {
+          cssModule.usedClasses.add(rawUsage.className);
+        }
+      }
+
       pushDiagnostic(diagnostics, rules, {
         code: "raw-css-module-class",
         message: `CSS Module class "${rawUsage.className}" is used as a raw class string.`,
         filePath,
         className: rawUsage.className,
         location: rawUsage.location
+      });
+    }
+  }
+
+  for (const [cssModulePath, cssModule] of cssModules) {
+    if (cssModule.hasUnresolvedUsage) {
+      continue;
+    }
+
+    for (const className of cssModule.classes) {
+      if (
+        cssModule.usedClasses.has(className) ||
+        isIgnoredClass(className, options.ignoreClasses)
+      ) {
+        continue;
+      }
+
+      pushDiagnostic(diagnostics, rules, {
+        code: "unused-css-module-class",
+        message: `Class "${className}" is defined in ${path.basename(cssModulePath)} but is never used.`,
+        filePath: cssModulePath,
+        cssModulePath,
+        className,
+        location: cssModule.locations.get(className) ?? { index: 0, line: 1, column: 1 }
       });
     }
   }

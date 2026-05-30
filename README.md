@@ -1,8 +1,8 @@
 # css-modules-class-checker
 
 Checks that class names used from CSS Modules are defined in their matching
-`*.module.css` files, and reports CSS Module classes used incorrectly as raw
-`className` strings.
+`*.module.css` files, reports CSS Module classes that are never used, and
+reports CSS Module classes used incorrectly as raw `className` strings.
 
 The checker is built for JavaScript and TypeScript React projects, especially
 `.tsx` files using CSS Modules. It supports direct `className` expressions as
@@ -100,6 +100,7 @@ Each rule accepts `off`, `warning`, or `error`.
 | Rule                        | Default | Meaning                                                               |
 | --------------------------- | ------- | --------------------------------------------------------------------- |
 | `missing-css-module-class`  | `error` | A class is used from a CSS Module but is not defined in that CSS file |
+| `unused-css-module-class`   | `error` | A class is defined in a CSS Module but is never used                  |
 | `raw-css-module-class`      | `error` | A CSS Module class is used as a raw `className` string                |
 | `unresolved-dynamic-class`  | `error` | A dynamic `styles[...]` access cannot be resolved statically          |
 | `css-module-file-not-found` | `error` | A `*.module.css` import points to a missing file                      |
@@ -111,6 +112,7 @@ Each rule accepts `off`, `warning`, or `error`.
 | Code                        | Example                                                                 |
 | --------------------------- | ----------------------------------------------------------------------- |
 | `missing-css-module-class`  | `styles.secondary` while only `.primary` exists                         |
+| `unused-css-module-class`   | `.secondary` exists but no source file uses it                          |
 | `raw-css-module-class`      | `className="primary"` when `.primary` belongs to an imported CSS Module |
 | `unresolved-dynamic-class`  | `styles[getClassName()]`                                                |
 | `css-module-file-not-found` | `import styles from "./missing.module.css"`                             |

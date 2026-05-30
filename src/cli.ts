@@ -8,6 +8,7 @@ import type { DiagnosticCode, RuleLevel, RulesConfig } from "./types.js";
 const validRuleLevels = new Set<string>(["off", "warning", "error"]);
 const validRuleCodes = new Set<string>([
   "missing-css-module-class",
+  "unused-css-module-class",
   "raw-css-module-class",
   "unresolved-dynamic-class",
   "css-module-file-not-found",

@@ -4,6 +4,7 @@ export type RuleLevel = "off" | "warning" | "error";
 
 export type DiagnosticCode =
   | "missing-css-module-class"
+  | "unused-css-module-class"
   | "raw-css-module-class"
   | "unresolved-dynamic-class"
   | "css-module-file-not-found"
