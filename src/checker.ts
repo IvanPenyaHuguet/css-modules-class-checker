@@ -46,7 +46,7 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
       continue;
     }
 
-    const imports = findCssModuleImports(parsedSource.program, filePath);
+    const imports = findCssModuleImports(parsedSource.program, filePath, options.matchFiles);
 
     if (imports.length === 0) {
       continue;

@@ -39,9 +39,12 @@ export type LocalsConvention =
   | "dashesOnly"
   | ((originalClassName: string, generatedClassName: string, inputFile: string) => string);
 
+export type CssModuleFileMatcher = string | RegExp;
+
 export type CheckOptions = {
   target?: string;
   ignore?: string[];
+  matchFiles?: CssModuleFileMatcher[];
   ignoreClasses?: Array<string | RegExp>;
   localsConvention?: LocalsConvention;
   rules?: RulesConfig;

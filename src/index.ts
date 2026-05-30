@@ -3,6 +3,7 @@ export type {
   CheckOptions,
   CheckResult,
   CheckStatus,
+  CssModuleFileMatcher,
   Diagnostic,
   DiagnosticCode,
   LocalsConvention,

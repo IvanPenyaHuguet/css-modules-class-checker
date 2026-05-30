@@ -28,4 +28,48 @@ describe("CSS Module import extraction", () => {
       }
     ]);
   });
+
+  it("finds imports matched by custom string suffixes", () => {
+    const source = `
+      import styles from "./button.icss";
+    `;
+    const filePath = path.resolve("/project/button.tsx");
+    const parsed = parseSourceFile(filePath, source);
+
+    if (!parsed.ok) {
+      throw new Error(parsed.message);
+    }
+
+    expect(findCssModuleImports(parsed.program, filePath, [".icss"])).toEqual([
+      {
+        localName: "styles",
+        namedImports: [],
+        importPath: "./button.icss",
+        cssModulePath: path.resolve("/project/button.icss"),
+        index: expect.any(Number)
+      }
+    ]);
+  });
+
+  it("finds imports matched by custom regular expressions", () => {
+    const source = `
+      import styles from "./button.css";
+    `;
+    const filePath = path.resolve("/project/button.tsx");
+    const parsed = parseSourceFile(filePath, source);
+
+    if (!parsed.ok) {
+      throw new Error(parsed.message);
+    }
+
+    expect(findCssModuleImports(parsed.program, filePath, [/button\.css$/])).toEqual([
+      {
+        localName: "styles",
+        namedImports: [],
+        importPath: "./button.css",
+        cssModulePath: path.resolve("/project/button.css"),
+        index: expect.any(Number)
+      }
+    ]);
+  });
 });

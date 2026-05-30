@@ -73,6 +73,7 @@ import { checkCssModules } from "css-modules-class-checker";
 const result = await checkCssModules({
   target: "src",
   ignore: ["dist", "node_modules"],
+  matchFiles: [".module.css", ".icss.css", /\.m\.css$/],
   ignoreClasses: ["legacy-global", /^external-/],
   localsConvention: "camelCase",
   rules: {
@@ -84,9 +85,52 @@ console.log(result.status);
 console.log(result.errors);
 ```
 
-`localsConvention` follows the CSS Modules convention used by tools such as
-Vite. The default is `undefined`, which means class names are not transformed:
-`.primary_button` is available as `styles.primary_button`, and `.is-active` as
+### `target`
+
+Directory to check. When omitted, the current working directory is checked.
+
+### `ignore`
+
+Array of file or directory patterns to skip while walking source files. These
+patterns are merged with the default ignored paths: `dist` and `node_modules`.
+
+### `matchFiles`
+
+Array of string or RegExp matchers used to decide which imports are treated as
+CSS Modules. The default is:
+
+```ts
+[".module.css"];
+```
+
+String matchers are suffix matches, so `.module.css` matches
+`./button.module.css`. RegExp matchers are tested against the import path and the
+resolved file path.
+
+```ts
+await checkCssModules({
+  target: "src",
+  matchFiles: [".module.css", ".icss.css", /\.m\.css$/]
+});
+```
+
+### `ignoreClasses`
+
+Array of class names or RegExp matchers that should not emit diagnostics. This
+applies to missing, unused, raw string, and empty selector diagnostics.
+
+```ts
+await checkCssModules({
+  target: "src",
+  ignoreClasses: ["legacy-global", /^external-/]
+});
+```
+
+### `localsConvention`
+
+Follows the CSS Modules convention used by tools such as Vite. The default is
+`undefined`, which means class names are not transformed: `.primary_button` is
+available as `styles.primary_button`, and `.is-active` as
 `styles["is-active"]`.
 
 Supported values are `"camelCase"`, `"camelCaseOnly"`, `"dashes"`, and
@@ -96,6 +140,21 @@ Supported values are `"camelCase"`, `"camelCaseOnly"`, `"dashes"`, and
 await checkCssModules({
   target: "src",
   localsConvention: (originalClassName, generatedClassName, inputFile) => `$${originalClassName}`
+});
+```
+
+### `rules`
+
+Object that changes the severity for individual diagnostics. Each rule accepts
+`"off"`, `"warning"`, or `"error"`.
+
+```ts
+await checkCssModules({
+  target: "src",
+  rules: {
+    "unresolved-dynamic-class": "warning",
+    "empty-css-module-selector": "off"
+  }
 });
 ```
 
@@ -124,7 +183,7 @@ Each rule accepts `off`, `warning`, or `error`.
 | `raw-css-module-class`      | `error` | A CSS Module class is used as a raw `className` string                |
 | `empty-css-module-selector` | `error` | A CSS Module class is defined by a selector with no declarations      |
 | `unresolved-dynamic-class`  | `error` | A dynamic `styles[...]` access cannot be resolved statically          |
-| `css-module-file-not-found` | `error` | A `*.module.css` import points to a missing file                      |
+| `css-module-file-not-found` | `error` | A matched CSS Module import points to a missing file                  |
 | `css-parse-error`           | `error` | A CSS Module file cannot be parsed                                    |
 | `source-parse-error`        | `error` | A source file cannot be parsed                                        |
 
@@ -147,7 +206,7 @@ See [Supported Patterns](docs/supported-patterns.md) for examples of supported C
 
 ## Known Limitations
 
-- Only `*.module.css` files are supported. SCSS, SASS, LESS, Stylus, and other preprocessors are out of scope.
+- By default, only `*.module.css` files are treated as CSS Modules. Use `matchFiles` to opt into other CSS Module filename conventions.
 - Non-resolvable dynamic classes such as `styles[getClassName()]` are reported as `unresolved-dynamic-class` instead of being guessed.
 - Raw string detection is scoped to files that import a CSS Module.
 - ID selectors and HTML tag selectors are not checked, and the checker cannot reliably know whether nested selectors are satisfied by rendered `children`. Selectors that depend on child ids or HTML tags may be reported as false positives.

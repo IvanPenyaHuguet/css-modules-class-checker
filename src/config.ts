@@ -1,6 +1,13 @@
-import type { DiagnosticCode, LocalsConvention, RuleLevel, RulesConfig } from "./types.js";
+import type {
+  CssModuleFileMatcher,
+  DiagnosticCode,
+  LocalsConvention,
+  RuleLevel,
+  RulesConfig
+} from "./types.js";
 
 export const defaultIgnores = ["dist", "node_modules"];
+export const defaultMatchFiles: CssModuleFileMatcher[] = [".module.css"];
 
 export const defaultRules: Record<DiagnosticCode, RuleLevel> = {
   "missing-css-module-class": "error",
@@ -15,6 +22,28 @@ export const defaultRules: Record<DiagnosticCode, RuleLevel> = {
 
 export function mergeRules(rules: RulesConfig | undefined): Record<DiagnosticCode, RuleLevel> {
   return { ...defaultRules, ...rules };
+}
+
+export function matchesCssModuleFile(
+  importPath: string,
+  resolvedPath: string,
+  matchFiles: CssModuleFileMatcher[] | undefined
+): boolean {
+  const matchers = matchFiles ?? defaultMatchFiles;
+  const candidates = [toPosixPath(importPath), toPosixPath(resolvedPath)];
+
+  return matchers.some((matcher) =>
+    candidates.some((candidate) => {
+      if (typeof matcher === "string") {
+        return candidate.endsWith(toPosixPath(matcher));
+      }
+
+      matcher.lastIndex = 0;
+      const matches = matcher.test(candidate);
+      matcher.lastIndex = 0;
+      return matches;
+    })
+  );
 }
 
 export function getLocalClassNames(
@@ -54,4 +83,8 @@ function uniqueClassNames(classNames: string[]): string[] {
 
 function toCamelCase(className: string, pattern: RegExp): string {
   return className.replace(pattern, (_, char: string) => char.toUpperCase());
+}
+
+function toPosixPath(filePath: string): string {
+  return filePath.replace(/\\/g, "/");
 }

@@ -5,6 +5,11 @@ declare module "*.module.css" {
   export default classes;
 }
 
+declare module "*.css" {
+  const classes: Record<string, string>;
+  export default classes;
+}
+
 declare module "clsx" {
   export default function clsx(...inputs: unknown[]): string;
 }

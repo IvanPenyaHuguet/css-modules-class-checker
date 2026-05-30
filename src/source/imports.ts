@@ -1,9 +1,14 @@
 import path from "node:path";
-import type { CssModuleImport } from "../types.js";
+import { matchesCssModuleFile } from "../config.js";
+import type { CssModuleFileMatcher, CssModuleImport } from "../types.js";
 import type { AstNode } from "./ast.js";
 import { getIdentifierName, getStringLiteralValue, isAstNode } from "./ast.js";
 
-export function findCssModuleImports(program: AstNode, filePath: string): CssModuleImport[] {
+export function findCssModuleImports(
+  program: AstNode,
+  filePath: string,
+  matchFiles?: CssModuleFileMatcher[]
+): CssModuleImport[] {
   const imports: CssModuleImport[] = [];
   const body = Array.isArray(program.body) ? program.body : [];
 
@@ -13,8 +18,13 @@ export function findCssModuleImports(program: AstNode, filePath: string): CssMod
     }
 
     const importPath = getStringLiteralValue(statement.source);
+    const cssModulePath = importPath ? path.resolve(path.dirname(filePath), importPath) : undefined;
 
-    if (!importPath?.endsWith(".module.css")) {
+    if (
+      !importPath ||
+      !cssModulePath ||
+      !matchesCssModuleFile(importPath, cssModulePath, matchFiles)
+    ) {
       continue;
     }
 
@@ -49,7 +59,7 @@ export function findCssModuleImports(program: AstNode, filePath: string): CssMod
       localName,
       namedImports,
       importPath,
-      cssModulePath: path.resolve(path.dirname(filePath), importPath),
+      cssModulePath,
       index: statement.start ?? 0
     });
   }
