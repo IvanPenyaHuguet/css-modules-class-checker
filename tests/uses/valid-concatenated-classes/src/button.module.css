@@ -1,0 +1,11 @@
+.button {
+  color: red;
+
+  &.active {
+    color: blue;
+  }
+}
+
+.button.active.primary {
+  color: yellow;
+}

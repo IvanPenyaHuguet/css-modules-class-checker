@@ -1,0 +1,11 @@
+.grid {
+  display: grid;
+}
+
+.primary {
+  background-color: blue;
+}
+
+.secondary {
+  background-color: red;
+}

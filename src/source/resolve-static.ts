@@ -13,10 +13,11 @@ export function createStaticResolver(
   const constants = new Map<string, string[]>();
   const objectConstants = new Map<string, Map<string, string[]>>();
   const typeAliases = new Map<string, string[]>();
+  const objectTypeAliases = new Map<string, Map<string, string[]>>();
 
   walkAst(program, (node) => {
     if (node.type === "TSTypeAliasDeclaration") {
-      collectTypeAlias(node, typeAliases);
+      collectTypeAlias(node, objectConstants, typeAliases, objectTypeAliases);
       return;
     }
 
@@ -30,20 +31,36 @@ export function createStaticResolver(
       return;
     }
 
-    collectTypedBinding(node, constants, typeAliases);
+    collectTypedBinding(node, constants, objectConstants, typeAliases, objectTypeAliases);
   });
 
   return (expression: AstNode) => resolveExpression(expression, constants, objectConstants);
 }
 
-function collectTypeAlias(node: AstNode, typeAliases: Map<string, string[]>): void {
+function collectTypeAlias(
+  node: AstNode,
+  objectConstants: Map<string, Map<string, string[]>>,
+  typeAliases: Map<string, string[]>,
+  objectTypeAliases: Map<string, Map<string, string[]>>
+): void {
   const identifier = getIdentifierName(node.id);
 
   if (!identifier || !isAstNode(node.typeAnnotation)) {
     return;
   }
 
-  const resolved = resolveTypeAnnotation(node.typeAnnotation, typeAliases);
+  const resolvedObject = resolveObjectTypeAnnotation(
+    node.typeAnnotation,
+    objectConstants,
+    typeAliases
+  );
+
+  if (resolvedObject) {
+    objectTypeAliases.set(identifier, resolvedObject);
+    return;
+  }
+
+  const resolved = resolveTypeAnnotation(node.typeAnnotation, objectConstants, typeAliases);
 
   if (resolved) {
     typeAliases.set(identifier, resolved);
@@ -110,12 +127,14 @@ function collectVariableDeclarator(
 function collectTypedBinding(
   node: AstNode,
   constants: Map<string, string[]>,
-  typeAliases: Map<string, string[]>
+  objectConstants: Map<string, Map<string, string[]>>,
+  typeAliases: Map<string, string[]>,
+  objectTypeAliases: Map<string, Map<string, string[]>>
 ): void {
   const identifier = getIdentifierName(node);
 
   if (identifier && isAstNode(node.typeAnnotation)) {
-    const resolved = resolveTypeAnnotation(node.typeAnnotation, typeAliases);
+    const resolved = resolveTypeAnnotation(node.typeAnnotation, objectConstants, typeAliases);
 
     if (resolved) {
       constants.set(identifier, resolved);
@@ -126,26 +145,18 @@ function collectTypedBinding(
     return;
   }
 
-  const objectType = getTypeAnnotationBody(node.typeAnnotation);
+  const objectTypeProperties = getObjectTypeProperties(
+    node.typeAnnotation,
+    objectConstants,
+    typeAliases,
+    objectTypeAliases
+  );
 
-  if (!objectType || objectType.type !== "TSTypeLiteral" || !Array.isArray(objectType.members)) {
+  if (!objectTypeProperties) {
     return;
   }
 
-  for (const member of objectType.members) {
-    if (!isAstNode(member) || member.type !== "TSPropertySignature") {
-      continue;
-    }
-
-    const propertyName = getStaticPropertyName(member.key);
-    const propertyValues = isAstNode(member.typeAnnotation)
-      ? resolveTypeAnnotation(member.typeAnnotation, typeAliases)
-      : undefined;
-
-    if (!propertyName || !propertyValues) {
-      continue;
-    }
-
+  for (const [propertyName, propertyValues] of objectTypeProperties) {
     const bindingName = findObjectPatternBindingName(node, propertyName);
 
     if (bindingName) {
@@ -209,6 +220,63 @@ function resolveExpression(
   }
 
   return undefined;
+}
+
+function getObjectTypeProperties(
+  annotation: AstNode,
+  objectConstants: Map<string, Map<string, string[]>>,
+  typeAliases: Map<string, string[]>,
+  objectTypeAliases: Map<string, Map<string, string[]>>
+): Map<string, string[]> | undefined {
+  const typeNode = getTypeAnnotationBody(annotation);
+
+  if (!typeNode) {
+    return undefined;
+  }
+
+  if (typeNode.type === "TSTypeLiteral") {
+    return resolveObjectTypeAnnotation(typeNode, objectConstants, typeAliases);
+  }
+
+  if (typeNode.type === "TSTypeReference") {
+    const typeName = getIdentifierName(typeNode.typeName);
+    return typeName ? objectTypeAliases.get(typeName) : undefined;
+  }
+
+  return undefined;
+}
+
+function resolveObjectTypeAnnotation(
+  annotation: AstNode,
+  objectConstants: Map<string, Map<string, string[]>>,
+  typeAliases: Map<string, string[]>
+): Map<string, string[]> | undefined {
+  const typeNode = getTypeAnnotationBody(annotation);
+
+  if (!typeNode || typeNode.type !== "TSTypeLiteral" || !Array.isArray(typeNode.members)) {
+    return undefined;
+  }
+
+  const properties = new Map<string, string[]>();
+
+  for (const member of typeNode.members) {
+    if (!isAstNode(member) || member.type !== "TSPropertySignature") {
+      return undefined;
+    }
+
+    const propertyName = getStaticPropertyName(member.key);
+    const propertyValues = isAstNode(member.typeAnnotation)
+      ? resolveTypeAnnotation(member.typeAnnotation, objectConstants, typeAliases)
+      : undefined;
+
+    if (!propertyName || !propertyValues) {
+      continue;
+    }
+
+    properties.set(propertyName, propertyValues);
+  }
+
+  return properties.size > 0 ? properties : undefined;
 }
 
 function resolveObjectExpression(
@@ -316,6 +384,7 @@ function getTemplateQuasiValue(quasi: unknown): string | undefined {
 
 function resolveTypeAnnotation(
   annotation: AstNode,
+  objectConstants: Map<string, Map<string, string[]>>,
   typeAliases: Map<string, string[]>
 ): string[] | undefined {
   const typeNode = getTypeAnnotationBody(annotation);
@@ -337,7 +406,7 @@ function resolveTypeAnnotation(
         return undefined;
       }
 
-      const childValues = resolveTypeAnnotation(childType, typeAliases);
+      const childValues = resolveTypeAnnotation(childType, objectConstants, typeAliases);
 
       if (!childValues) {
         return undefined;
@@ -351,16 +420,64 @@ function resolveTypeAnnotation(
 
   if (typeNode.type === "TSParenthesizedType") {
     return isAstNode(typeNode.typeAnnotation)
-      ? resolveTypeAnnotation(typeNode.typeAnnotation, typeAliases)
+      ? resolveTypeAnnotation(typeNode.typeAnnotation, objectConstants, typeAliases)
       : undefined;
   }
 
   if (typeNode.type === "TSTypeReference") {
     const typeName = getIdentifierName(typeNode.typeName);
-    return typeName ? typeAliases.get(typeName) : undefined;
+    return typeName
+      ? (typeAliases.get(typeName) ?? resolveObjectConstantValues(objectConstants.get(typeName)))
+      : undefined;
+  }
+
+  if (typeNode.type === "TSIndexedAccessType") {
+    return resolveIndexedAccessType(typeNode, objectConstants);
   }
 
   return undefined;
+}
+
+function resolveIndexedAccessType(
+  typeNode: AstNode,
+  objectConstants: Map<string, Map<string, string[]>>
+): string[] | undefined {
+  const objectName = getTypeQueryName(typeNode.objectType);
+
+  if (!objectName || !isKeyofTypeQuery(typeNode.indexType, objectName)) {
+    return undefined;
+  }
+
+  const objectValues = objectConstants.get(objectName);
+
+  return resolveObjectConstantValues(objectValues);
+}
+
+function resolveObjectConstantValues(
+  objectValues: Map<string, string[]> | undefined
+): string[] | undefined {
+  return objectValues ? [...new Set([...objectValues.values()].flat())] : undefined;
+}
+
+function isKeyofTypeQuery(node: unknown, objectName: string): boolean {
+  return (
+    isAstNode(node) &&
+    node.type === "TSTypeOperator" &&
+    node.operator === "keyof" &&
+    getTypeQueryName(node.typeAnnotation) === objectName
+  );
+}
+
+function getTypeQueryName(node: unknown): string | undefined {
+  if (!isAstNode(node)) {
+    return undefined;
+  }
+
+  if (node.type === "TSParenthesizedType") {
+    return getTypeQueryName(node.typeAnnotation);
+  }
+
+  return node.type === "TSTypeQuery" ? getIdentifierName(node.exprName) : undefined;
 }
 
 function getTypeAnnotationBody(annotation: AstNode): AstNode | undefined {
