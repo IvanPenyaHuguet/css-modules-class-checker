@@ -1,0 +1,5 @@
+{
+  "rules": {
+    "raw-css-module-class": "off"
+  }
+}

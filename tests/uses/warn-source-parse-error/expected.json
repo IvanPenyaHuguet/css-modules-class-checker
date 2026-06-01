@@ -1,0 +1,10 @@
+{
+  "status": "SUCCESS",
+  "errors": [
+    {
+      "code": "source-parse-error",
+      "severity": "warning",
+      "filePath": "button.tsx"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "status": "SUCCESS",
+  "errors": [
+    {
+      "code": "unused-css-module-class",
+      "severity": "warning",
+      "filePath": "button.module.css",
+      "cssModulePath": "button.module.css",
+      "className": "orphan"
+    }
+  ]
+}

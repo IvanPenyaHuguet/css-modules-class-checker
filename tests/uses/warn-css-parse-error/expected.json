@@ -1,0 +1,11 @@
+{
+  "status": "SUCCESS",
+  "errors": [
+    {
+      "code": "css-parse-error",
+      "severity": "warning",
+      "filePath": "button.tsx",
+      "cssModulePath": "button.module.css"
+    }
+  ]
+}

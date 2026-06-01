@@ -1,0 +1,5 @@
+{
+  "rules": {
+    "source-parse-error": "off"
+  }
+}
