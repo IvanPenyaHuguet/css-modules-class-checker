@@ -23,17 +23,25 @@ describe("use cases", async () => {
     .map((entry) => entry.name)
     .sort();
 
-  for (const caseName of cases) {
-    it(caseName, async () => {
-      const caseRoot = path.join(usesRoot, caseName);
-      const target = path.join(caseRoot, "src");
-      const expected = JSON.parse(
-        await readFile(path.join(caseRoot, "expected.json"), "utf8")
-      ) as ExpectedResult;
-      const options = await readOptions(caseRoot);
-      const result = await checkCssModules({ ...options, target });
+  for (const resolverMode of ["auto", "off"] as const) {
+    describe(`TypeScript resolver ${resolverMode}`, () => {
+      for (const caseName of cases) {
+        it(caseName, async () => {
+          const caseRoot = path.join(usesRoot, caseName);
+          const target = path.join(caseRoot, "src");
+          const expected = JSON.parse(
+            await readFile(path.join(caseRoot, "expected.json"), "utf8")
+          ) as ExpectedResult;
+          const options = await readOptions(caseRoot);
+          const result = await checkCssModules({
+            ...options,
+            target,
+            typeScriptResolver: resolverMode
+          });
 
-      expect(normalizeResult(result, target)).toEqual(expected);
+          expect(normalizeResult(result, target)).toEqual(expected);
+        });
+      }
     });
   }
 });

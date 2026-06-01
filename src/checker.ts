@@ -7,6 +7,7 @@ import { findSourceFiles } from "./files.js";
 import { findCssModuleImports } from "./source/imports.js";
 import { parseSourceFile } from "./source/parse.js";
 import { findCssModuleClassUsages, findRawClassNameUsages } from "./source/class-usages.js";
+import { createTypeScriptSemanticResolver } from "./source/typescript-semantic-resolver.js";
 import type {
   CheckOptions,
   CheckResult,
@@ -29,6 +30,10 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
   const target = path.resolve(options.target ?? process.cwd());
   const rules = mergeRules(options.rules);
   const sourceFiles = await findSourceFiles(target, options.ignore);
+  const semanticResolver =
+    options.typeScriptResolver === "off"
+      ? undefined
+      : await createTypeScriptSemanticResolver(process.cwd());
   const diagnostics: Diagnostic[] = [];
   const cssModules = new Map<string, CssModuleRecord>();
 
@@ -116,7 +121,17 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
       }
     }
 
-    for (const usage of findCssModuleClassUsages(source, parsedSource.program, imports)) {
+    const typeScriptSemanticResolver =
+      semanticResolver && isTypeScriptSourceFile(filePath)
+        ? { filePath, resolver: semanticResolver }
+        : undefined;
+
+    for (const usage of findCssModuleClassUsages(
+      source,
+      parsedSource.program,
+      imports,
+      typeScriptSemanticResolver
+    )) {
       if (usage.kind === "unresolved") {
         cssModules.get(usage.cssModulePath)!.hasUnresolvedUsage = true;
         pushDiagnostic(diagnostics, rules, {
@@ -231,6 +246,10 @@ export async function checkCssModules(options: CheckOptions = {}): Promise<Check
     filesChecked: sourceFiles.length,
     cssModulesChecked: cssModules.size
   };
+}
+
+function isTypeScriptSourceFile(filePath: string): boolean {
+  return filePath.endsWith(".ts") || filePath.endsWith(".tsx");
 }
 
 function pushDiagnostic(

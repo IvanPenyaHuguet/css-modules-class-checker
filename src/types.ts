@@ -48,6 +48,7 @@ export type CheckOptions = {
   ignoreClasses?: Array<string | RegExp>;
   localsConvention?: LocalsConvention;
   rules?: RulesConfig;
+  typeScriptResolver?: "auto" | "off";
 };
 
 export type CssModuleNamedImport = {

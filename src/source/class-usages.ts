@@ -3,6 +3,7 @@ import type { ClassUsage, CssModuleImport, SourceLocation } from "../types.js";
 import type { AstNode } from "./ast.js";
 import { getIdentifierName, getStringLiteralValue, isAstNode, walkAst } from "./ast.js";
 import { createStaticResolver } from "./resolve-static.js";
+import type { TypeScriptSemanticResolver } from "./typescript-semantic-resolver.js";
 
 type RawClassUsage = {
   className: string;
@@ -12,7 +13,8 @@ type RawClassUsage = {
 export function findCssModuleClassUsages(
   source: string,
   program: AstNode,
-  imports: CssModuleImport[]
+  imports: CssModuleImport[],
+  semanticResolver?: { filePath: string; resolver: TypeScriptSemanticResolver }
 ): ClassUsage[] {
   const usages: ClassUsage[] = [];
   const resolveStatic = createStaticResolver(program);
@@ -81,7 +83,15 @@ export function findCssModuleClassUsages(
       return;
     }
 
-    const resolved = resolveStatic(node.property);
+    const semanticResolved =
+      typeof node.property.start === "number" && typeof node.property.end === "number"
+        ? semanticResolver?.resolver.resolveStringLiterals(
+            semanticResolver.filePath,
+            node.property.start,
+            node.property.end
+          )
+        : undefined;
+    const resolved = semanticResolved ?? resolveStatic(node.property);
 
     if (!resolved) {
       usages.push({
