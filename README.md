@@ -204,6 +204,29 @@ Each rule accepts `off`, `warning`, or `error`.
 
 See [Supported Patterns](docs/supported-patterns.md) for examples of supported CSS Module access patterns, `clsx`/`classnames` usage, and raw class string detection.
 
+## Comparison
+
+Several popular tools help with CSS Modules or unused CSS, but they usually
+optimize for editor feedback, generated typings, lint integration, or production
+CSS pruning. `css-modules-class-checker` is focused on a narrower contract:
+checking that React/TypeScript source files and the CSS Modules they import stay
+in sync, with a standalone CLI and programmatic API that can run in CI/CD.
+
+| Tool | Main focus | How `css-modules-class-checker` differs |
+| ---- | ---------- | --------------------------------------- |
+| [`typescript-plugin-css-modules`](https://www.npmjs.com/package/typescript-plugin-css-modules) | TypeScript language service plugin for CSS Modules editor completions and type information. | It improves the editor experience, but it is not a project checker you can run as a CLI in CI/CD. `css-modules-class-checker` can fail a pipeline when a module class is missing, when a CSS class is declared but never used, when a module class is written as a raw `className` string, or when a dynamic access cannot be resolved statically. |
+| [`typed-css-modules`](https://github.com/Quramy/typed-css-modules) / [`typed-scss-modules`](https://www.npmjs.com/package/typed-scss-modules) | Generate `.d.ts` files so TypeScript can type CSS/SCSS Module exports. | Generated typings catch some missing class accesses through TypeScript, but they do not detect unused CSS Module classes, raw string misuse, empty selectors, missing CSS Module files, or unresolved dynamic class names. This checker also avoids adding generated declaration files to the repo. |
+| [`eslint-plugin-css-modules`](https://www.npmjs.com/package/eslint-plugin-css-modules) | ESLint rules for undefined and unused CSS Module classes. | The latest npm version is `2.12.0`, last modified in 2023, and it does not explicitly target the current ESLint 10 line. This checker is independent from ESLint, exposes configurable rule severities, and covers additional source patterns such as `clsx`/`classnames`, bracket access, template literals, static constants, named exports, raw module classes in strings, empty CSS Module selectors, missing module files, and unresolved dynamic class accesses. |
+| [`eslint-plugin-postcss-modules`](https://www.npmjs.com/package/eslint-plugin-postcss-modules) | ESLint rules that use PostCSS to validate CSS Module exports. | The latest npm version is `2.0.0`, last modified in 2022, and it does not explicitly target the current ESLint 10 line. `css-modules-class-checker` runs without ESLint, reports CI-friendly diagnostics, and includes checks beyond exported class existence: unused local module classes, raw `className` strings, empty selectors, missing imported CSS Module files, CSS/source parse errors, and non-resolvable dynamic accesses. |
+| [`stylelint-no-unused-selectors`](https://npm.io/package/stylelint-no-unused-selectors) | Stylelint rule for finding unused selectors by comparing stylesheets with nearby documents such as JSX, TSX, or HTML. | It starts from selectors and nearby content. This checker starts from real CSS Module imports in JS/TS, which keeps classes scoped to the module file that exported them and lets it validate object-based usage like `styles.foo`, `styles["foo"]`, destructured aliases, named exports, and `clsx`/`classnames` compositions. |
+| [`PurgeCSS`](https://purgecss.com/) / [`purgecss`](https://www.npmjs.com/package/purgecss) | Remove unused CSS from production output by scanning content and stylesheets. | Purging is a build optimization step, not a source-contract validator. This checker does not mutate CSS output; it reports actionable diagnostics before merge/build when a component and its imported CSS Module drift apart. |
+| [`UnCSS`](https://github.com/uncss/uncss) / [`ucss`](https://www.npmjs.com/package/ucss) | Detect or remove unused CSS from HTML or rendered pages. | These tools are better suited to global CSS and page-level analysis. `css-modules-class-checker` is specialized for static analysis of React/TypeScript components that import CSS Modules, including same class names appearing safely in different module files. |
+
+In short: type-generation and editor plugins help while writing code, ESLint and
+Stylelint plugins tie the check to their respective ecosystems, and CSS purgers
+optimize final output. `css-modules-class-checker` is meant to be a dedicated
+CSS Modules consistency check that can run locally, in scripts, or in CI/CD.
+
 ## Known Limitations
 
 - By default, only `*.module.css` files are treated as CSS Modules. Use `matchFiles` to opt into other CSS Module filename conventions.
