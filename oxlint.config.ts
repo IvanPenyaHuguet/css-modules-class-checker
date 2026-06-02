@@ -10,7 +10,7 @@ export default defineConfig({
     node: true,
     vitest: true
   },
-  ignorePatterns: ["dist", "node_modules", "tests/uses/**/src/**"],
+  ignorePatterns: ["dist", "node_modules", "packages/core/tests/uses/**/src/**"],
   options: {
     typeAware: true
   },

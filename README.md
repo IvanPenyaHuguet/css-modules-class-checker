@@ -14,21 +14,21 @@ can be used through default imports or named exports.
 Run without installing:
 
 ```bash
-npx css-modules-class-checker src
-pnpm dlx css-modules-class-checker src
+npx css-modules-class-checker-cli src
+pnpm dlx css-modules-class-checker-cli src
 ```
 
 Run a local binary:
 
 ```bash
-npm install --save-dev css-modules-class-checker
-npx css-modules-class-checker src
+npm install --save-dev css-modules-class-checker-cli
+npx css-modules-class-checker-cli src
 ```
 
 The target argument is optional. When omitted, the current directory is checked.
 
 ```bash
-css-modules-class-checker [target]
+css-modules-class-checker-cli [target]
 ```
 
 ## CLI Options
@@ -50,11 +50,11 @@ node_modules
 Examples:
 
 ```bash
-css-modules-class-checker src --ignore generated
-css-modules-class-checker src --ignore-class legacy-global external
-css-modules-class-checker src --locals-convention camelCase
-css-modules-class-checker src --rule unresolved-dynamic-class=warning
-css-modules-class-checker src --rule empty-css-module-selector=off
+css-modules-class-checker-cli src --ignore generated
+css-modules-class-checker-cli src --ignore-class legacy-global external
+css-modules-class-checker-cli src --locals-convention camelCase
+css-modules-class-checker-cli src --rule unresolved-dynamic-class=warning
+css-modules-class-checker-cli src --rule empty-css-module-selector=off
 ```
 
 Exit codes:
@@ -66,6 +66,12 @@ Exit codes:
 | `2`  | CLI configuration or runtime error |
 
 ## API Usage
+
+Install the importable API package when using the checker from code:
+
+```bash
+npm install --save-dev css-modules-class-checker
+```
 
 ```ts
 import { checkCssModules } from "css-modules-class-checker";

@@ -1,0 +1,36 @@
+{
+  "name": "css-modules-class-checker",
+  "version": "1.0.0",
+  "description": "Importable CSS Modules class checker application API.",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup --config ./tsup.config.ts",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "test": "vitest run --root ../.. packages/app/tests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lightningcss": "^1.32.0",
+    "oxc-parser": "^0.133.0"
+  },
+  "devDependencies": {
+    "css-modules-class-checker-core": "*"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

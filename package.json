@@ -1,35 +1,24 @@
 {
-  "name": "css-modules-class-checker",
+  "name": "css-modules-class-checker-monorepo",
   "version": "1.0.0",
-  "description": "Checks CSS Modules class usages in JavaScript and TypeScript projects.",
+  "private": true,
+  "description": "Monorepo for CSS Modules class checking packages.",
   "license": "MIT",
-  "bin": {
-    "css-modules-class-checker": "./dist/cli.js"
-  },
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
+  "workspaces": [
+    "packages/core",
+    "packages/app",
+    "packages/cli",
+    "packages/eslint-plugin"
+  ],
   "scripts": {
-    "build": "tsup src/index.ts src/cli.ts --format esm --dts --clean",
-    "format": "oxfmt",
-    "format:check": "oxfmt --check",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "commander": "^15.0.0",
-    "lightningcss": "^1.32.0",
-    "oxc-parser": "^0.133.0"
+    "build": "npm run build --workspaces",
+    "format": "npm run format --workspaces",
+    "format:check": "npm run format:check --workspaces",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces"
   },
   "devDependencies": {
     "@types/node": "24.12.4",
@@ -39,6 +28,10 @@
     "tsup": "8.5.1",
     "typescript": "6.0.3",
     "vitest": "4.1.7"
+  },
+  "overrides": {
+    "lightningcss": "1.32.0",
+    "oxc-parser": "0.133.0"
   },
   "engines": {
     "node": ">=22.12.0"

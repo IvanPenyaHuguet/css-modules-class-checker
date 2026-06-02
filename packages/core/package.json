@@ -1,0 +1,33 @@
+{
+  "name": "css-modules-class-checker-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Core CSS Modules class analysis for JavaScript and TypeScript projects.",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup --config ./tsup.config.ts",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "test": "vitest run --root ../.. packages/core/tests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lightningcss": "^1.32.0",
+    "oxc-parser": "^0.133.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
