@@ -7,9 +7,7 @@ const ruleCodes = [
   "raw-css-module-class",
   "empty-css-module-selector",
   "unresolved-dynamic-class",
-  "css-module-file-not-found",
-  "css-parse-error",
-  "source-parse-error"
+  "css-module-file-not-found"
 ];
 
 export default defineConfig({
