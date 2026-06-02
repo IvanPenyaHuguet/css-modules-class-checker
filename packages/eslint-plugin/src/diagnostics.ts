@@ -92,6 +92,6 @@ function getMissingImportLocation(
   };
 }
 
-function isVirtualFile(filePath: string): boolean {
+export function isVirtualFile(filePath: string): boolean {
   return filePath === "<input>" || filePath.startsWith("<") || filePath.includes("node_modules");
 }

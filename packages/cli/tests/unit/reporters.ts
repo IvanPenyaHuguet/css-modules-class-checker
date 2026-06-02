@@ -27,7 +27,7 @@ describe("renderTextReport", () => {
         {
           code: "missing-css-module-class",
           severity: "error",
-          message: "Class \"missing\" is not defined in button.module.css.",
+          message: 'Class "missing" is not defined in button.module.css.',
           filePath,
           line: 3,
           column: 14,

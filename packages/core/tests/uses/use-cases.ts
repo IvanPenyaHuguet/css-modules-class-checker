@@ -2,11 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import {
-  checkCssModules,
-  type CheckOptions,
-  type CheckResult
-} from "../../src/index";
+import { checkCssModules, type CheckOptions, type CheckResult } from "../../src/index";
 
 const usesRoot = path.dirname(fileURLToPath(import.meta.url));
 

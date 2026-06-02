@@ -7,7 +7,7 @@ import type {
 } from "./types";
 
 export const defaultIgnores = ["dist", "node_modules"];
-export const defaultMatchFiles: CssModuleFileMatcher[] = [".module.css"];
+export const defaultMatchFiles: string[] = [".module.css"];
 
 export const defaultRules: Record<DiagnosticCode, RuleLevel> = {
   "missing-css-module-class": "error",

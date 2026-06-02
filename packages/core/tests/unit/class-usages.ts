@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseSourceFile } from "../../src/source/parse";
-import {
-  findCssModuleClassUsages,
-  findRawClassNameUsages
-} from "../../src/source/class-usages";
+import { findCssModuleClassUsages, findRawClassNameUsages } from "../../src/source/class-usages";
 import type { CssModuleImport } from "../../src/types";
 
 const cssImport: CssModuleImport = {

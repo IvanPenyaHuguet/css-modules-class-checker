@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "Importable CSS Modules class checker application API.",
   "license": "MIT",
-  "type": "module",
   "files": [
     "dist",
     "README.md"
   ],
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

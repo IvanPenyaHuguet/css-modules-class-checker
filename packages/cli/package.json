@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Executable CLI for css-modules-class-checker.",
   "license": "MIT",
-  "type": "module",
   "bin": {
     "css-modules-class-checker-cli": "./dist/cli.js"
   },
@@ -11,6 +10,7 @@
     "dist",
     "README.md"
   ],
+  "type": "module",
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
     "format": "oxfmt .",
@@ -22,9 +22,9 @@
   },
   "dependencies": {
     "commander": "^15.0.0",
+    "css-modules-class-checker": "*",
     "lightningcss": "^1.32.0",
-    "oxc-parser": "^0.133.0",
-    "css-modules-class-checker": "*"
+    "oxc-parser": "^0.133.0"
   },
   "engines": {
     "node": ">=22.12.0"

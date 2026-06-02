@@ -21,6 +21,7 @@ type RuleContext = {
 };
 
 type RuleVisitor = {
+  before?: () => boolean | void;
   Program?: (node: unknown) => void;
 };
 
@@ -117,6 +118,26 @@ describe("eslint plugin", () => {
     expect(withOptions).toEqual([]);
   });
 
+  it("skips files without matching CSS Module imports in the before hook", () => {
+    expect(runRuleBefore("missing-css-module-class", "raw-class-without-module-import")).toBe(
+      false
+    );
+    expect(runRuleBefore("missing-css-module-class", "custom-match-files-suffix")).toBe(false);
+  });
+
+  it("uses configured matchFiles strings in the before hook", () => {
+    expect(
+      runRuleBefore("missing-css-module-class", "custom-match-files-suffix", undefined, {
+        matchFiles: [".css"]
+      })
+    ).not.toBe(false);
+    expect(
+      runRuleBefore("missing-css-module-class", "custom-match-files-suffix", undefined, {
+        matchFiles: ["src/button.css"]
+      })
+    ).not.toBe(false);
+  });
+
   it("exposes the recommended rules config for oxlint/eslint consumers", () => {
     const recommendedRules = plugin.configs.recommended.rules;
 
@@ -158,6 +179,31 @@ function runRule(
   fileName = "button.tsx",
   options?: unknown
 ): string[] {
+  const { reports, visitor } = createRuleVisitor(code, fixture, fileName, options);
+
+  if (visitor?.before?.() === false) {
+    return reports;
+  }
+
+  visitor?.Program?.({ type: "Program" });
+  return reports;
+}
+
+function runRuleBefore(
+  code: (typeof ruleCodes)[number],
+  fixture: string,
+  fileName = "button.tsx",
+  options?: unknown
+): boolean | void {
+  return createRuleVisitor(code, fixture, fileName, options).visitor?.before?.();
+}
+
+function createRuleVisitor(
+  code: (typeof ruleCodes)[number],
+  fixture: string,
+  fileName = "button.tsx",
+  options?: unknown
+): { reports: string[]; visitor: RuleVisitor | undefined } {
   const filePath = path.resolve(coreUseCasesRoot, fixture, "src", fileName);
   const rule = plugin.rules[code] as unknown as RuleModule;
   const reports: string[] = [];
@@ -173,8 +219,7 @@ function runRule(
   };
 
   const visitor = (rule.createOnce ?? rule.create)?.(context);
-  visitor?.Program?.({ type: "Program" });
-  return reports;
+  return { reports, visitor };
 }
 
 function runOxlintExpectingFailure(args: string[]): string {

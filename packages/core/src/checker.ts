@@ -171,7 +171,16 @@ async function analyzeSourceFile(
     return;
   }
 
-  analyzeUsages(source, parsedSource.program, imports, filePath, options, rules, cssModules, diagnostics);
+  analyzeUsages(
+    source,
+    parsedSource.program,
+    imports,
+    filePath,
+    options,
+    rules,
+    cssModules,
+    diagnostics
+  );
 }
 
 function analyzeSourceFileSync(
@@ -253,7 +262,16 @@ function analyzeSourceFileSync(
     return;
   }
 
-  analyzeUsages(source, parsedSource.program, imports, filePath, options, rules, cssModules, diagnostics);
+  analyzeUsages(
+    source,
+    parsedSource.program,
+    imports,
+    filePath,
+    options,
+    rules,
+    cssModules,
+    diagnostics
+  );
 }
 
 function analyzeUsages(

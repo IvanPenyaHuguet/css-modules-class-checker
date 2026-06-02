@@ -14,7 +14,7 @@ describe("public API", () => {
         'import styles from "./button.module.css";',
         "",
         "export function Button() {",
-        '  return <button className={styles.root}>Save</button>;',
+        "  return <button className={styles.root}>Save</button>;",
         "}"
       ].join("\n")
     );
