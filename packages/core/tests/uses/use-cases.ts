@@ -24,27 +24,22 @@ describe("use cases", async () => {
     .map((entry) => entry.name)
     .sort();
 
-  for (const caseName of cases) {
-    it(caseName, async () => {
-      const caseRoot = path.join(usesRoot, caseName);
-      const target = path.join(caseRoot, "src");
-      const expected = JSON.parse(
-        await readFile(path.join(caseRoot, "expected.json"), "utf8")
-      ) as ExpectedResult;
-      const options = await readOptions(caseRoot);
-      const result = await checkCssModules({ ...options, target });
+  it.each(cases)("%s", async (caseName) => {
+    const caseRoot = path.join(usesRoot, caseName);
+    const target = path.join(caseRoot, "src");
+    const expected = parseExpectedResult(
+      JSON.parse(await readFile(path.join(caseRoot, "expected.json"), "utf8"))
+    );
+    const options = await readOptions(caseRoot);
+    const result = await checkCssModules({ ...options, target });
 
-      expect(normalizeResult(result, target)).toEqual(expected);
-    });
-  }
+    expect(normalizeResult(result, target)).toEqual(expected);
+  });
 });
 
 async function readOptions(caseRoot: string): Promise<Omit<CheckOptions, "target">> {
   try {
-    return JSON.parse(await readFile(path.join(caseRoot, "options.json"), "utf8")) as Omit<
-      CheckOptions,
-      "target"
-    >;
+    return parseOptions(JSON.parse(await readFile(path.join(caseRoot, "options.json"), "utf8")));
   } catch {
     return {};
   }
@@ -65,4 +60,48 @@ function normalizeResult(result: CheckResult, target: string): ExpectedResult {
 
 function toRelative(target: string, filePath: string): string {
   return path.relative(target, filePath).split(path.sep).join("/");
+}
+
+function parseExpectedResult(value: unknown): ExpectedResult {
+  if (!isExpectedResult(value)) {
+    throw new Error("Invalid expected result fixture.");
+  }
+
+  return value;
+}
+
+function parseOptions(value: unknown): Omit<CheckOptions, "target"> {
+  if (!isRecord(value)) {
+    throw new Error("Invalid options fixture.");
+  }
+
+  return value;
+}
+
+function isExpectedResult(value: unknown): value is ExpectedResult {
+  return (
+    isRecord(value) &&
+    (value.status === "SUCCESS" || value.status === "FAIL") &&
+    Array.isArray(value.errors) &&
+    value.errors.every(isExpectedError)
+  );
+}
+
+function isExpectedError(value: unknown): value is ExpectedResult["errors"][number] {
+  return (
+    isRecord(value) &&
+    typeof value.code === "string" &&
+    typeof value.severity === "string" &&
+    typeof value.filePath === "string" &&
+    optionalString(value.cssModulePath) &&
+    optionalString(value.className)
+  );
+}
+
+function optionalString(value: unknown): boolean {
+  return value === undefined || typeof value === "string";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

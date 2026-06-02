@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { Plugin, Rule } from "@oxlint/plugins";
-import plugin from "../../src/index";
+import { configs, rules } from "../../src/index";
 
 type RuleModule = {
   createOnce?: (context: RuleContext) => RuleVisitor;
@@ -32,7 +32,7 @@ const ruleCodes = [
   "empty-css-module-selector",
   "unresolved-dynamic-class",
   "css-module-file-not-found"
-];
+] as const;
 const testRoot = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(testRoot, "../..");
 const oxlintFixtureRoot = path.resolve(testRoot, "../fixtures/oxlint-plugin");
@@ -80,7 +80,23 @@ const reportCases: RuleCase[] = [
 
 describe("eslint plugin", () => {
   it("exports every checker diagnostic as a rule", () => {
-    expect(Object.keys(plugin.rules).sort()).toEqual([...ruleCodes].sort());
+    expect(Object.keys(rules).sort()).toEqual([...ruleCodes].sort());
+  });
+
+  it("documents rule options in the JSON schema", () => {
+    const schema = rules["missing-css-module-class"].meta?.schema;
+
+    expect(schema).toEqual([
+      expect.objectContaining({
+        description: expect.any(String),
+        properties: expect.objectContaining({
+          ignoreClasses: expect.objectContaining({ description: expect.any(String) }),
+          ignoreClassPatterns: expect.objectContaining({ description: expect.any(String) }),
+          localsConvention: expect.objectContaining({ description: expect.any(String) }),
+          matchFiles: expect.objectContaining({ description: expect.any(String) })
+        })
+      })
+    ]);
   });
 
   it.each(reportCases)("reports $code diagnostics through the createOnce API", (testCase) => {
@@ -139,7 +155,7 @@ describe("eslint plugin", () => {
   });
 
   it("exposes the recommended rules config for oxlint/eslint consumers", () => {
-    const recommendedRules = plugin.configs.recommended.rules;
+    const recommendedRules = configs.recommended.rules;
 
     expect(recommendedRules).toEqual(
       Object.fromEntries(ruleCodes.map((code) => [`css-modules-class-checker/${code}`, "error"]))
@@ -147,13 +163,11 @@ describe("eslint plugin", () => {
   });
 
   it("keeps TypeScript types for rules and configs", () => {
-    expectTypeOf(plugin.rules["missing-css-module-class"]).toEqualTypeOf<Rule>();
-    expectTypeOf(plugin.configs.recommended.rules).toMatchTypeOf<
+    expectTypeOf(rules["missing-css-module-class"]).toEqualTypeOf<Rule>();
+    expectTypeOf(configs.recommended.rules).toMatchTypeOf<
       Record<`css-modules-class-checker/${(typeof ruleCodes)[number]}`, "error">
     >();
-    expectTypeOf(
-      plugin.configs.recommended.plugins["css-modules-class-checker"]
-    ).toEqualTypeOf<Plugin>();
+    expectTypeOf(configs.recommended.plugins["css-modules-class-checker"]).toEqualTypeOf<Plugin>();
   });
 
   it("honors eslint-disable-next-line without hiding later diagnostics in oxlint", () => {
@@ -205,7 +219,12 @@ function createRuleVisitor(
   options?: unknown
 ): { reports: string[]; visitor: RuleVisitor | undefined } {
   const filePath = path.resolve(coreUseCasesRoot, fixture, "src", fileName);
-  const rule = plugin.rules[code] as unknown as RuleModule;
+  const rule = rules[code];
+
+  if (!isRuleModule(rule)) {
+    throw new Error(`Rule ${code} does not expose a create API.`);
+  }
+
   const reports: string[] = [];
   const context: RuleContext = {
     filename: filePath,
@@ -220,6 +239,10 @@ function createRuleVisitor(
 
   const visitor = (rule.createOnce ?? rule.create)?.(context);
   return { reports, visitor };
+}
+
+function isRuleModule(rule: Rule): rule is Rule & RuleModule {
+  return "createOnce" in rule || "create" in rule;
 }
 
 function runOxlintExpectingFailure(args: string[]): string {

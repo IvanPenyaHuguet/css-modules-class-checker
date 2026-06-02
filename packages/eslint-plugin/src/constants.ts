@@ -11,8 +11,13 @@ export const diagnosticCodes = [
   "css-module-file-not-found"
 ] as const satisfies readonly DiagnosticCode[];
 
-export const checkerRulesForPlugin = Object.fromEntries([
-  ...diagnosticCodes.map((code) => [code, "error"] as const),
-  ["css-parse-error", "off"] as const,
-  ["source-parse-error", "off"] as const
-]) as RulesConfig;
+export const checkerRulesForPlugin = {
+  "missing-css-module-class": "error",
+  "unused-css-module-class": "error",
+  "raw-css-module-class": "error",
+  "empty-css-module-selector": "error",
+  "unresolved-dynamic-class": "error",
+  "css-module-file-not-found": "error",
+  "css-parse-error": "off",
+  "source-parse-error": "off"
+} satisfies RulesConfig;

@@ -1,4 +1,5 @@
-import type { Context, Rule, VisitorWithHooks } from "@oxlint/plugins";
+import { defineRule } from "@oxlint/plugins";
+import type { Context, Rule, RuleOptionsSchema, VisitorWithHooks } from "@oxlint/plugins";
 import { defaultMatchFiles } from "css-modules-class-checker-core";
 import {
   formatDiagnosticMessage,
@@ -9,35 +10,54 @@ import {
 import { getRuleDescription } from "./rule-descriptions";
 import type { PluginDiagnosticCode } from "./types";
 
+const ruleOptionsSchema: RuleOptionsSchema = [
+  {
+    type: "object",
+    description: "Options shared by css-modules-class-checker rules.",
+    properties: {
+      ignoreClasses: {
+        type: "array",
+        description:
+          "CSS class names to ignore when checking missing or unused CSS Module classes.",
+        items: {
+          type: "string",
+          description: "A CSS class name to ignore."
+        }
+      },
+      ignoreClassPatterns: {
+        type: "array",
+        description:
+          "Regular expression patterns for CSS class names to ignore when checking missing or unused CSS Module classes.",
+        items: {
+          type: "string",
+          description: "A JavaScript regular expression pattern string."
+        }
+      },
+      localsConvention: {
+        description: "CSS Modules locals convention used to resolve exported class names.",
+        enum: ["camelCase", "camelCaseOnly", "dashes", "dashesOnly"]
+      },
+      matchFiles: {
+        type: "array",
+        description:
+          "Import source strings or path suffixes that should be treated as CSS Module files.",
+        items: {
+          type: "string",
+          description: "A CSS Module import matcher."
+        }
+      }
+    },
+    additionalProperties: false
+  }
+];
+
 export function createRule(code: PluginDiagnosticCode): Rule {
-  return {
+  return defineRule({
     meta: {
       docs: {
         description: getRuleDescription(code)
       },
-      schema: [
-        {
-          type: "object",
-          properties: {
-            ignoreClasses: {
-              type: "array",
-              items: { type: "string" }
-            },
-            ignoreClassPatterns: {
-              type: "array",
-              items: { type: "string" }
-            },
-            localsConvention: {
-              enum: ["camelCase", "camelCaseOnly", "dashes", "dashesOnly"]
-            },
-            matchFiles: {
-              type: "array",
-              items: { type: "string" }
-            }
-          },
-          additionalProperties: false
-        }
-      ],
+      schema: ruleOptionsSchema,
       type: "problem" as const
     },
     createOnce(context: Context): VisitorWithHooks {
@@ -59,7 +79,7 @@ export function createRule(code: PluginDiagnosticCode): Rule {
         }
       };
     }
-  };
+  });
 }
 
 function shouldCheckFile(context: Context): boolean {

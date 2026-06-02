@@ -3,10 +3,13 @@ import { checkCssModuleSourceFileSync, type Diagnostic } from "css-modules-class
 import { checkerRulesForPlugin } from "./constants";
 import { normalizeOptions } from "./options";
 
-const analysisCache = new Map<string, Diagnostic[]>();
+type SourceCode = Context["sourceCode"];
+
+const analysisCache = new WeakMap<SourceCode, Map<string, Diagnostic[]>>();
 
 export function getDiagnostics(context: Context): Diagnostic[] {
-  const source = context.sourceCode.text;
+  const sourceCode = context.sourceCode;
+  const source = sourceCode.text;
   const filePath = context.filename;
 
   if (!source || !filePath || isVirtualFile(filePath)) {
@@ -14,8 +17,9 @@ export function getDiagnostics(context: Context): Diagnostic[] {
   }
 
   const rawOptions = context.options?.[0] ?? {};
-  const cacheKey = JSON.stringify([filePath, source, rawOptions]);
-  const cached = analysisCache.get(cacheKey);
+  const cacheKey = JSON.stringify([filePath, rawOptions]);
+  const sourceCache = getSourceCache(sourceCode);
+  const cached = sourceCache.get(cacheKey);
 
   if (cached) {
     return cached;
@@ -29,8 +33,20 @@ export function getDiagnostics(context: Context): Diagnostic[] {
     rules: checkerRulesForPlugin
   });
 
-  analysisCache.set(cacheKey, result.errors);
+  sourceCache.set(cacheKey, result.errors);
   return result.errors;
+}
+
+function getSourceCache(sourceCode: SourceCode): Map<string, Diagnostic[]> {
+  const cached = analysisCache.get(sourceCode);
+
+  if (cached) {
+    return cached;
+  }
+
+  const sourceCache = new Map<string, Diagnostic[]>();
+  analysisCache.set(sourceCode, sourceCache);
+  return sourceCache;
 }
 
 export function formatDiagnosticMessage(diagnostic: Diagnostic): string {

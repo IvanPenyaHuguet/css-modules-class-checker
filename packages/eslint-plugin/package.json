@@ -17,7 +17,7 @@
     "build": "tsup --config ./tsup.config.ts",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "lint": "oxlint .",
+    "lint": "oxlint src tests/unit tests/fixtures/oxlint-plugin/src",
     "lint:fix": "oxlint --fix .",
     "test": "npm run build && vitest run --root ../.. packages/eslint-plugin/tests && oxlint -c tests/fixtures/oxlint-plugin/oxlint.config.ts tests/fixtures/oxlint-plugin/src && oxlint -c tests/fixtures/oxlint-plugin/oxlint.rules-off.config.ts tests/fixtures/oxlint-plugin/rules-off",
     "typecheck": "tsc --noEmit"
