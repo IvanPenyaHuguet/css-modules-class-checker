@@ -1,0 +1,27 @@
+packages:
+  - packages/core
+  - packages/css-modules-app
+  - packages/cli
+  - packages/eslint-plugin
+
+catalog:
+  lightningcss: 1.32.0
+  oxc-parser: 0.133.0
+
+savePrefix: ''
+engineStrict: true
+pmOnFail: error
+strictPeerDependencies: true
+minimumReleaseAge: 4320
+minimumReleaseAgeStrict: true
+minimumReleaseAgeIgnoreMissingTime: false
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 43200
+blockExoticSubdeps: true
+ignoreScripts: true
+strictDepBuilds: true
+sideEffectsCache: false
+enablePrePostScripts: false
+
+allowBuilds:
+  esbuild: true

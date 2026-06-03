@@ -24,11 +24,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "lightningcss": "^1.32.0",
-    "oxc-parser": "^0.133.0"
+    "lightningcss": "catalog:default",
+    "oxc-parser": "catalog:default"
   },
   "devDependencies": {
-    "@stale-styles/core": "*"
+    "@stale-styles/core": "workspace:*"
   },
   "engines": {
     "node": ">=22.12.0"

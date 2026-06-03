@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@stale-styles/css-modules": "*",
+    "@stale-styles/css-modules": "workspace:*",
     "commander": "^15.0.0"
   },
   "engines": {

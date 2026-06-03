@@ -2,9 +2,10 @@
   "name": "@stale-styles/monorepo",
   "version": "1.0.0-beta.1",
   "private": true,
-  "description": "Monorepo for CSS Modules class checking packages.",
+  "description": "Monorepo for styles that have been stale, checking tools packages.",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@11.4.0",
   "workspaces": [
     "packages/core",
     "packages/css-modules-app",
@@ -12,16 +13,16 @@
     "packages/eslint-plugin"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "format": "npm run format --workspaces",
-    "format:check": "npm run format:check --workspaces",
-    "lint": "npm run lint --workspaces",
-    "lint:fix": "npm run lint:fix --workspaces",
+    "build": "pnpm -r build",
+    "format": "pnpm -r format",
+    "format:check": "pnpm -r format:check",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
     "release": "commit-and-tag-version",
     "release:beta": "commit-and-tag-version --prerelease beta",
     "release:dry-run": "commit-and-tag-version --dry-run",
-    "test": "npm run test --workspaces",
-    "typecheck": "npm run typecheck --workspaces"
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
     "@types/node": "24.12.4",
@@ -34,8 +35,8 @@
     "vitest": "4.1.7"
   },
   "overrides": {
-    "lightningcss": "1.32.0",
-    "oxc-parser": "0.133.0"
+    "lightningcss": "catalog:default",
+    "oxc-parser": "catalog:default"
   },
   "engines": {
     "node": ">=22.12.0"

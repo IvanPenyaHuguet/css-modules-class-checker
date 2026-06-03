@@ -23,8 +23,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "lightningcss": "^1.32.0",
-    "oxc-parser": "^0.133.0"
+    "lightningcss": "catalog:default",
+    "oxc-parser": "catalog:default"
   },
   "engines": {
     "node": ">=22.12.0"

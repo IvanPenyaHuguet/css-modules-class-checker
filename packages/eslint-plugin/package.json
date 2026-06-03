@@ -23,16 +23,16 @@
     "format:check": "oxfmt --check .",
     "lint": "oxlint -c ../../oxlint.config.ts src tests/unit tests/fixtures/oxlint-plugin/src",
     "lint:fix": "oxlint --fix .",
-    "test": "npm run build && vitest run --root ../.. packages/eslint-plugin/tests && oxlint -c tests/fixtures/oxlint-plugin/oxlint.config.ts tests/fixtures/oxlint-plugin/src && oxlint -c tests/fixtures/oxlint-plugin/oxlint.rules-off.config.ts tests/fixtures/oxlint-plugin/rules-off",
+    "test": "pnpm run build && vitest run --root ../.. packages/eslint-plugin/tests && oxlint -c tests/fixtures/oxlint-plugin/oxlint.config.ts tests/fixtures/oxlint-plugin/src && oxlint -c tests/fixtures/oxlint-plugin/oxlint.rules-off.config.ts tests/fixtures/oxlint-plugin/rules-off",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@oxlint/plugins": "^1.67.0",
-    "lightningcss": "^1.32.0",
-    "oxc-parser": "^0.133.0"
+    "lightningcss": "catalog:default",
+    "oxc-parser": "catalog:default"
   },
   "devDependencies": {
-    "@stale-styles/core": "*",
+    "@stale-styles/core": "workspace:*",
     "eslint": "10.4.1"
   },
   "peerDependencies": {
