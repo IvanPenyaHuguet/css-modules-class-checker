@@ -1,11 +1,14 @@
 import type { Plugin, Rule } from "@oxlint/plugins";
-import type { LocalsConvention } from "css-modules-class-checker-core";
+import type { LocalsConvention } from "@stale-styles/core";
 import type { diagnosticCodes, pluginName } from "./constants";
 
 export type PluginDiagnosticCode = (typeof diagnosticCodes)[number];
 export type PluginRuleId = `${typeof pluginName}/${PluginDiagnosticCode}`;
 export type PluginRules = Record<PluginDiagnosticCode, Rule>;
 export type RecommendedRules = Record<PluginRuleId, "error">;
+export type EslintCompatiblePlugin = Omit<Plugin, "rules"> & {
+  rules: Record<string, any>;
+};
 
 export type PluginRuleOptions = {
   /**
@@ -29,7 +32,7 @@ export type PluginRuleOptions = {
 
 export type RecommendedConfig = {
   plugins: {
-    [pluginName]: Plugin;
+    [pluginName]: EslintCompatiblePlugin;
   };
   rules: RecommendedRules;
 };
@@ -38,7 +41,6 @@ export type PluginConfigs = {
   recommended: RecommendedConfig;
 };
 
-export type PluginWithConfigs = Plugin & {
-  rules: PluginRules;
+export type PluginWithConfigs = EslintCompatiblePlugin & {
   configs: PluginConfigs;
 };

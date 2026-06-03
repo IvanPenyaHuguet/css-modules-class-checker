@@ -6,13 +6,11 @@ export default defineConfig({
   },
   outDir: "dist",
   format: ["esm"],
-  dts: {
-    resolve: ["css-modules-class-checker-core"]
-  },
+  dts: true,
   clean: true,
   platform: "node",
   target: "es2022",
   skipNodeModulesBundle: true,
-  noExternal: ["css-modules-class-checker-core"],
+  noExternal: ["@stale-styles/core"],
   tsconfig: "tsconfig.json"
 });

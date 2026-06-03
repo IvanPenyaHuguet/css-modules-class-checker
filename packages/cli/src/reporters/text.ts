@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { CheckResult, Diagnostic } from "css-modules-class-checker";
+import type { CheckResult, Diagnostic } from "@stale-styles/css-modules";
 
 export function renderTextReport(result: CheckResult, root = process.cwd()): string {
   if (result.errors.length === 0) {

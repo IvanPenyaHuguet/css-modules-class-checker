@@ -2,9 +2,9 @@ import { eslintCompatPlugin } from "@oxlint/plugins";
 import { createConfigs } from "./configs";
 import { pluginName } from "./constants";
 import { rules } from "./rules";
-import type { PluginWithConfigs } from "./types";
+import type { EslintCompatiblePlugin, PluginWithConfigs } from "./types";
 
-const basePlugin = eslintCompatPlugin({
+const basePlugin: EslintCompatiblePlugin = eslintCompatPlugin({
   meta: {
     name: pluginName
   },

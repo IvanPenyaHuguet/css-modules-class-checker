@@ -1,8 +1,7 @@
-import type { Plugin } from "@oxlint/plugins";
 import { pluginName } from "./constants";
-import type { PluginConfigs, RecommendedRules } from "./types";
+import type { EslintCompatiblePlugin, PluginConfigs, RecommendedRules } from "./types";
 
-export function createConfigs(plugin: Plugin): PluginConfigs {
+export function createConfigs(plugin: EslintCompatiblePlugin): PluginConfigs {
   return {
     recommended: {
       plugins: {
@@ -15,11 +14,11 @@ export function createConfigs(plugin: Plugin): PluginConfigs {
 
 function createRecommendedRules(): RecommendedRules {
   return {
-    "css-modules-class-checker/missing-css-module-class": "error",
-    "css-modules-class-checker/unused-css-module-class": "error",
-    "css-modules-class-checker/raw-css-module-class": "error",
-    "css-modules-class-checker/empty-css-module-selector": "error",
-    "css-modules-class-checker/unresolved-dynamic-class": "error",
-    "css-modules-class-checker/css-module-file-not-found": "error"
+    [`${pluginName}/missing-css-module-class`]: "error",
+    [`${pluginName}/unused-css-module-class`]: "error",
+    [`${pluginName}/raw-css-module-class`]: "error",
+    [`${pluginName}/empty-css-module-selector`]: "error",
+    [`${pluginName}/unresolved-dynamic-class`]: "error",
+    [`${pluginName}/css-module-file-not-found`]: "error"
   };
 }

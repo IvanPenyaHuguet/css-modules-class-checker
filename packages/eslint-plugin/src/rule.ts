@@ -1,6 +1,6 @@
 import { defineRule } from "@oxlint/plugins";
 import type { Context, Rule, RuleOptionsSchema, VisitorWithHooks } from "@oxlint/plugins";
-import { defaultMatchFiles } from "css-modules-class-checker-core";
+import { defaultMatchFiles } from "@stale-styles/core";
 import {
   formatDiagnosticMessage,
   getDiagnostics,
@@ -13,7 +13,7 @@ import type { PluginDiagnosticCode } from "./types";
 const ruleOptionsSchema: RuleOptionsSchema = [
   {
     type: "object",
-    description: "Options shared by css-modules-class-checker rules.",
+    description: "Options shared by @stale-styles rules.",
     properties: {
       ignoreClasses: {
         type: "array",

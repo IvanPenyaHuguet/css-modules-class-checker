@@ -1,5 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@stale-styles/core": ["../core/src/index.ts"]
+    }
+  },
   "include": ["src", "tests", "tsup.config.ts"],
   "exclude": ["dist"]
 }

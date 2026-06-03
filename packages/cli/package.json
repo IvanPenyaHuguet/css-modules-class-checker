@@ -1,11 +1,9 @@
 {
-  "name": "css-modules-class-checker-cli",
-  "version": "1.0.0",
-  "description": "Executable CLI for css-modules-class-checker.",
+  "name": "@stale-styles/cli",
+  "version": "1.0.0-beta.1",
+  "description": "Executable CLI for @stale-styles/css-modules.",
   "license": "MIT",
-  "bin": {
-    "css-modules-class-checker-cli": "./dist/cli.js"
-  },
+  "bin": "./dist/cli.js",
   "files": [
     "dist",
     "README.md"
@@ -21,10 +19,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "commander": "^15.0.0",
-    "css-modules-class-checker": "*",
-    "lightningcss": "^1.32.0",
-    "oxc-parser": "^0.133.0"
+    "@stale-styles/css-modules": "*",
+    "commander": "^15.0.0"
   },
   "engines": {
     "node": ">=22.12.0"

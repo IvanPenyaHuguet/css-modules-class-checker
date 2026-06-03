@@ -1,4 +1,4 @@
-// eslint-disable-next-line css-modules-class-checker/css-module-file-not-found
+// eslint-disable-next-line @stale-styles/css-module-file-not-found
 import styles from "./next-line-missing.module.css";
 
 void styles;

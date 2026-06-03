@@ -1,4 +1,4 @@
-/* eslint-disable css-modules-class-checker/empty-css-module-selector */
+/* eslint-disable @stale-styles/empty-css-module-selector */
 import styles from "./disable-empty-css-module-selector.module.css";
 
 export function DisabledEmptyCssModuleSelector() {

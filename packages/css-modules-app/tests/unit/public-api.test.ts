@@ -6,7 +6,7 @@ import { checkCssModules } from "../../src/index";
 
 describe("public API", () => {
   it("checks a valid CSS Modules target", async () => {
-    const target = await mkdtemp(path.join(os.tmpdir(), "css-modules-class-checker-app-"));
+    const target = await mkdtemp(path.join(os.tmpdir(), "stale-styles-css-modules-app-"));
 
     await writeFile(
       path.join(target, "button.tsx"),

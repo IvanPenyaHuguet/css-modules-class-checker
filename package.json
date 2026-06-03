@@ -1,13 +1,13 @@
 {
-  "name": "css-modules-class-checker-monorepo",
-  "version": "1.0.0",
+  "name": "@stale-styles/monorepo",
+  "version": "1.0.0-beta.1",
   "private": true,
   "description": "Monorepo for CSS Modules class checking packages.",
   "license": "MIT",
   "type": "module",
   "workspaces": [
     "packages/core",
-    "packages/app",
+    "packages/css-modules-app",
     "packages/cli",
     "packages/eslint-plugin"
   ],
@@ -17,11 +17,15 @@
     "format:check": "npm run format:check --workspaces",
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint:fix --workspaces",
-    "test": "npm run test --workspaces --if-present",
+    "release": "commit-and-tag-version",
+    "release:beta": "commit-and-tag-version --prerelease beta",
+    "release:dry-run": "commit-and-tag-version --dry-run",
+    "test": "npm run test --workspaces",
     "typecheck": "npm run typecheck --workspaces"
   },
   "devDependencies": {
     "@types/node": "24.12.4",
+    "commit-and-tag-version": "12.7.3",
     "oxfmt": "0.52.0",
     "oxlint": "1.67.0",
     "oxlint-tsgolint": "0.23.0",

@@ -16,18 +16,12 @@ describe("runCli", () => {
   it("returns success for a valid target", async () => {
     const target = await createFixture();
 
-    await expect(runCli(["node", "css-modules-class-checker-cli", target])).resolves.toBe(0);
+    await expect(runCli(["node", "@stale-styles/cli", target])).resolves.toBe(0);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("CSS Modules check passed."));
   });
 
   it("returns configuration error for an invalid rule", async () => {
-    const exitCode = await runCli([
-      "node",
-      "css-modules-class-checker-cli",
-      ".",
-      "--rule",
-      "not-a-rule=error"
-    ]);
+    const exitCode = await runCli(["node", "@stale-styles/cli", ".", "--rule", "not-a-rule=error"]);
 
     expect(exitCode).toBe(2);
     expect(errorSpy).toHaveBeenCalledWith(
@@ -37,7 +31,7 @@ describe("runCli", () => {
 });
 
 async function createFixture(): Promise<string> {
-  const target = await mkdtemp(path.join(os.tmpdir(), "css-modules-class-checker-cli-"));
+  const target = await mkdtemp(path.join(os.tmpdir(), "stale-styles-test-"));
 
   await writeFile(
     path.join(target, "button.tsx"),

@@ -1,0 +1,15 @@
+{
+  "preset": "conventionalcommits",
+  "tagPrefix": "v",
+  "packageFiles": [
+    "package.json"
+  ],
+  "bumpFiles": [
+    "package.json",
+    "package-lock.json",
+    "packages/core/package.json",
+    "packages/css-modules-app/package.json",
+    "packages/cli/package.json",
+    "packages/eslint-plugin/package.json"
+  ]
+}

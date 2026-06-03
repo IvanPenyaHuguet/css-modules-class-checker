@@ -7,7 +7,7 @@ export function UnresolvedDynamicClassMixed({
   disabledVariant: string;
   reportedVariant: string;
 }) {
-  // eslint-disable-next-line css-modules-class-checker/unresolved-dynamic-class
+  // eslint-disable-next-line @stale-styles/unresolved-dynamic-class
   const disabled = styles[disabledVariant];
   const reported = styles[reportedVariant];
 

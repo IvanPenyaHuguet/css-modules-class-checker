@@ -1,6 +1,6 @@
-import type { DiagnosticCode, RulesConfig } from "css-modules-class-checker-core";
+import type { DiagnosticCode, RulesConfig } from "@stale-styles/core";
 
-export const pluginName = "css-modules-class-checker";
+export const pluginName = "@stale-styles";
 
 export const diagnosticCodes = [
   "missing-css-module-class",

@@ -1,4 +1,4 @@
-/* eslint-disable css-modules-class-checker/raw-css-module-class */
+/* eslint-disable @stale-styles/raw-css-module-class */
 import styles from "./disable-raw-css-module-class.module.css";
 
 export function DisabledRawCssModuleClass() {

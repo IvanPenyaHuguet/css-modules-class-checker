@@ -1,4 +1,4 @@
-/* eslint-disable css-modules-class-checker/css-module-file-not-found */
+/* eslint-disable @stale-styles/css-module-file-not-found */
 import styles from "./missing.module.css";
 
 void styles;

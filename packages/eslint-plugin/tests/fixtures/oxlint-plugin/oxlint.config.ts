@@ -15,5 +15,5 @@ export default defineConfig({
     browser: true
   },
   jsPlugins: [fileURLToPath(new URL("../../../dist/index.js", import.meta.url))],
-  rules: Object.fromEntries(ruleCodes.map((code) => [`css-modules-class-checker/${code}`, "error"]))
+  rules: Object.fromEntries(ruleCodes.map((code) => [`@stale-styles/${code}`, "error"]))
 });

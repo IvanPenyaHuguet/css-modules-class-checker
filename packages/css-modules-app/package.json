@@ -1,6 +1,6 @@
 {
-  "name": "css-modules-class-checker",
-  "version": "1.0.0",
+  "name": "@stale-styles/css-modules",
+  "version": "1.0.0-beta.1",
   "description": "Importable CSS Modules class checker application API.",
   "license": "MIT",
   "files": [
@@ -20,7 +20,7 @@
     "format:check": "oxfmt --check .",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "test": "vitest run --root ../.. packages/app/tests",
+    "test": "vitest run --root ../.. packages/css-modules-app/tests",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -28,7 +28,7 @@
     "oxc-parser": "^0.133.0"
   },
   "devDependencies": {
-    "css-modules-class-checker-core": "*"
+    "@stale-styles/core": "*"
   },
   "engines": {
     "node": ">=22.12.0"

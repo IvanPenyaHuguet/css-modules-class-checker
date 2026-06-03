@@ -47,7 +47,7 @@ describe("localsConvention", () => {
   });
 
   it("supports a custom Vite-style transform function through the API", async () => {
-    const target = await mkdtemp(path.join(tmpdir(), "css-modules-class-checker-"));
+    const target = await mkdtemp(path.join(tmpdir(), "stale-styles-css-modules-"));
 
     await writeFile(
       path.join(target, "button.module.css"),

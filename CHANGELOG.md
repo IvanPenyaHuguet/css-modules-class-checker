@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Initial stable release of `css-modules-class-checker`.
+- Initial stable release of `@stale-styles/css-modules`.
 - Added a CLI for checking JavaScript and TypeScript projects that use CSS Modules.
 - Added a public API through `checkCssModules`.
 - Added diagnostics for missing CSS Module classes, unused CSS Module classes, raw CSS Module class strings, empty CSS Module selectors, unresolved dynamic class access, missing CSS Module files, CSS parse errors, and source parse errors.

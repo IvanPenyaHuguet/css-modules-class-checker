@@ -1,5 +1,5 @@
 import type { Context, VisitorWithHooks } from "@oxlint/plugins";
-import { checkCssModuleSourceFileSync, type Diagnostic } from "css-modules-class-checker-core";
+import { checkCssModuleSourceFileSync, type Diagnostic } from "@stale-styles/core";
 import { checkerRulesForPlugin } from "./constants";
 import { normalizeOptions } from "./options";
 

@@ -1,7 +1,7 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { renderTextReport } from "../../src/reporters/text";
-import type { CheckResult } from "css-modules-class-checker";
+import type { CheckResult } from "@stale-styles/css-modules";
 
 describe("renderTextReport", () => {
   it("renders a passing summary", () => {

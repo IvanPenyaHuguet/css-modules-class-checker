@@ -2,14 +2,14 @@
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import { Command, InvalidArgumentError } from "commander";
-import { checkCssModules } from "css-modules-class-checker";
+import { checkCssModules } from "@stale-styles/css-modules";
 import { renderTextReport } from "./reporters/text";
 import type {
   DiagnosticCode,
   LocalsConvention,
   RuleLevel,
   RulesConfig
-} from "css-modules-class-checker";
+} from "@stale-styles/css-modules";
 
 type CliLocalsConvention = Extract<LocalsConvention, string>;
 
@@ -75,7 +75,7 @@ export async function runCli(argv = process.argv): Promise<number> {
 
 function createProgram(): Command {
   return new Command()
-    .name("css-modules-class-checker-cli")
+    .name("@stale-styles/cli")
     .description("Checks CSS Modules class usages in JavaScript and TypeScript projects.")
     .argument("[target]", "target directory", ".")
     .option("--ignore <pattern...>", "ignore files or directories")

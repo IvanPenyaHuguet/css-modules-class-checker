@@ -1,242 +1,154 @@
-# css-modules-class-checker
+# Stale Styles
 
-Checks that class names used from CSS Modules are defined in their matching
-`*.module.css` files, reports CSS Module classes that are never used, and
-reports CSS Module classes used incorrectly as raw `className` strings.
+Stale Styles checks the contract between React/JavaScript source files and the
+CSS Modules they import. It reports classes used from a module but not defined
+there, local module classes that are no longer used, CSS Module classes written
+as raw `className` strings, empty module selectors, missing module files, and
+dynamic class accesses that cannot be resolved statically.
 
-The checker is built for JavaScript and TypeScript React projects, especially
-`.tsx` files using CSS Modules. It supports direct `className` and `class`
-expressions as well as composition through `clsx` and `classnames`. CSS Modules
-can be used through default imports or named exports.
+The project is useful when CSS Modules are already part of a codebase and you
+want a CI-friendly way to keep components and stylesheets in sync without
+generating `.d.ts` files or relying only on editor feedback.
 
-## Installation And Usage
+## Packages
 
-Run without installing:
+| Package | Use it when | Highlights |
+| ------- | ----------- | ---------- |
+| [`@stale-styles/cli`](packages/cli/README.md) | You want a command that can run locally, in npm scripts, or in CI. | Project scan, text report, exit codes, rule severity flags, ignore options, locals convention support. |
+| [`@stale-styles/css-modules`](packages/css-modules-app/README.md) | You want to call the checker from Node.js code. | Public programmatic API, typed options and diagnostics, custom `matchFiles`, custom `ignoreClasses`, custom `localsConvention`. |
+| [`@stale-styles/eslint-plugin`](packages/eslint-plugin/README.md) | You want diagnostics through ESLint or Oxlint. | Flat-config compatible plugin shape, `recommended` config, individual rules, inline disable support from the lint runner. |
+| [`@stale-styles/core`](packages/core/README.md) | Internal implementation package. | Private shared analysis engine for the public packages. Not intended for direct use. |
 
-```bash
-npx css-modules-class-checker-cli src
-pnpm dlx css-modules-class-checker-cli src
-```
+See each package README for installation, API details, commands, and examples.
+For examples of supported syntax, see
+[Supported Patterns](docs/supported-patterns.md).
 
-Run a local binary:
+## Quick Start
 
-```bash
-npm install --save-dev css-modules-class-checker-cli
-npx css-modules-class-checker-cli src
-```
-
-The target argument is optional. When omitted, the current directory is checked.
-
-```bash
-css-modules-class-checker-cli [target]
-```
-
-## CLI Options
+Run the standalone checker without installing it:
 
 ```bash
---ignore <pattern...>       Ignore files or directories
---ignore-class <name...>    Ignore specific class names
---locals-convention <name>  CSS Modules locals convention
---rule <rule=level...>      Configure rules: off, warning, or error
+npx @stale-styles/cli src
 ```
 
-Default ignored paths are always merged in:
-
-```text
-dist
-node_modules
-```
-
-Examples:
+Or add it to a project:
 
 ```bash
-css-modules-class-checker-cli src --ignore generated
-css-modules-class-checker-cli src --ignore-class legacy-global external
-css-modules-class-checker-cli src --locals-convention camelCase
-css-modules-class-checker-cli src --rule unresolved-dynamic-class=warning
-css-modules-class-checker-cli src --rule empty-css-module-selector=off
+npm install --save-dev @stale-styles/cli
+npx @stale-styles/cli src
 ```
 
-Exit codes:
-
-| Code | Meaning                            |
-| ---- | ---------------------------------- |
-| `0`  | No error diagnostics were found    |
-| `1`  | Error diagnostics were found       |
-| `2`  | CLI configuration or runtime error |
-
-## API Usage
-
-Install the importable API package when using the checker from code:
+For lint integration:
 
 ```bash
-npm install --save-dev css-modules-class-checker
+npm install --save-dev @stale-styles/eslint-plugin
 ```
 
 ```ts
-import { checkCssModules } from "css-modules-class-checker";
+import cssModules from "@stale-styles/eslint-plugin/css-modules";
 
-const result = await checkCssModules({
-  target: "src",
-  ignore: ["dist", "node_modules"],
-  matchFiles: [".module.css", ".icss.css", /\.m\.css$/],
-  ignoreClasses: ["legacy-global", /^external-/],
-  localsConvention: "camelCase",
-  rules: {
-    "unresolved-dynamic-class": "warning"
-  }
-});
-
-console.log(result.status);
-console.log(result.errors);
+export default [cssModules.configs.recommended];
 ```
 
-### `target`
+For programmatic usage:
 
-Directory to check. When omitted, the current working directory is checked.
-
-### `ignore`
-
-Array of file or directory patterns to skip while walking source files. These
-patterns are merged with the default ignored paths: `dist` and `node_modules`.
-
-### `matchFiles`
-
-Array of string or RegExp matchers used to decide which imports are treated as
-CSS Modules. The default is:
+```bash
+npm install --save-dev @stale-styles/css-modules
+```
 
 ```ts
-[".module.css"];
+import { checkCssModules } from "@stale-styles/css-modules";
+
+const result = await checkCssModules({ target: "src" });
+
+if (result.status === "FAIL") {
+  console.log(result.errors);
+}
 ```
-
-String matchers are suffix matches, so `.module.css` matches
-`./button.module.css`. RegExp matchers are tested against the import path and the
-resolved file path.
-
-```ts
-await checkCssModules({
-  target: "src",
-  matchFiles: [".module.css", ".icss.css", /\.m\.css$/]
-});
-```
-
-### `ignoreClasses`
-
-Array of class names or RegExp matchers that should not emit diagnostics. This
-applies to missing, unused, raw string, and empty selector diagnostics.
-
-```ts
-await checkCssModules({
-  target: "src",
-  ignoreClasses: ["legacy-global", /^external-/]
-});
-```
-
-### `localsConvention`
-
-Follows the CSS Modules convention used by tools such as Vite. The default is
-`undefined`, which means class names are not transformed: `.primary_button` is
-available as `styles.primary_button`, and `.is-active` as
-`styles["is-active"]`.
-
-Supported values are `"camelCase"`, `"camelCaseOnly"`, `"dashes"`, and
-`"dashesOnly"`. The API also accepts a Vite-style function:
-
-```ts
-await checkCssModules({
-  target: "src",
-  localsConvention: (originalClassName, generatedClassName, inputFile) => `$${originalClassName}`
-});
-```
-
-### `rules`
-
-Object that changes the severity for individual diagnostics. Each rule accepts
-`"off"`, `"warning"`, or `"error"`.
-
-```ts
-await checkCssModules({
-  target: "src",
-  rules: {
-    "unresolved-dynamic-class": "warning",
-    "empty-css-module-selector": "off"
-  }
-});
-```
-
-## Result Shape
-
-```ts
-type CheckResult = {
-  status: "SUCCESS" | "FAIL";
-  errors: Diagnostic[];
-  filesChecked: number;
-  cssModulesChecked: number;
-};
-```
-
-`errors` may include warning diagnostics. `status` is `"FAIL"` only when at
-least one emitted diagnostic has severity `"error"`.
 
 ## Rules
 
-Each rule accepts `off`, `warning`, or `error`.
+Stale Styles is organized around rule-style diagnostics. The CLI and public API
+support all rules below, including parse-error diagnostics. The ESLint/Oxlint
+plugin exposes the source-level CSS Modules rules that fit lint workflows.
 
-| Rule                        | Default | Meaning                                                               |
-| --------------------------- | ------- | --------------------------------------------------------------------- |
-| `missing-css-module-class`  | `error` | A class is used from a CSS Module but is not defined in that CSS file |
-| `unused-css-module-class`   | `error` | A class is defined in a CSS Module but is never used                  |
-| `raw-css-module-class`      | `error` | A CSS Module class is used as a raw `className` string                |
-| `empty-css-module-selector` | `error` | A CSS Module class is defined by a selector with no declarations      |
-| `unresolved-dynamic-class`  | `error` | A dynamic `styles[...]` access cannot be resolved statically          |
-| `css-module-file-not-found` | `error` | A matched CSS Module import points to a missing file                  |
-| `css-parse-error`           | `error` | A CSS Module file cannot be parsed                                    |
-| `source-parse-error`        | `error` | A source file cannot be parsed                                        |
+Each rule can be configured as `off`, `warning`, or `error` in the CLI and API.
+In the lint plugin, the same checks are exposed as individual lint rules with
+the `@stale-styles/*` prefix.
 
-## Diagnostics
+| Rule | Applies to | Meaning |
+| ---- | ---------- | ------- |
+| `missing-css-module-class` | CLI, API, plugin | Reports class names used from a CSS Module import when that class is not defined by the imported CSS file. |
+| `unused-css-module-class` | CLI, API, plugin | Reports local CSS Module classes that are defined in a module file but are not used by the source files that import it. |
+| `raw-css-module-class` | CLI, API, plugin | Reports CSS Module classes written as raw `className` or `class` strings instead of being read from the module import. |
+| `empty-css-module-selector` | CLI, API, plugin | Reports CSS Module classes whose selector has no declarations, which often means a stale or placeholder class remained in the stylesheet. |
+| `unresolved-dynamic-class` | CLI, API, plugin | Reports dynamic `styles[...]` access when the possible class names cannot be resolved statically. |
+| `css-module-file-not-found` | CLI, API, plugin | Reports imports that match the CSS Module file convention but point to a file that does not exist. |
+| `css-parse-error` | CLI, API | Reports CSS Module files that cannot be parsed. |
+| `source-parse-error` | CLI, API | Reports source files that cannot be parsed. |
 
-| Code                        | Example                                                                                      |
-| --------------------------- | -------------------------------------------------------------------------------------------- |
-| `missing-css-module-class`  | `styles.secondary` while only `.primary` exists                                              |
-| `unused-css-module-class`   | `.secondary` exists but no source file uses it                                               |
-| `raw-css-module-class`      | `className="primary"` or `class="primary"` when `.primary` belongs to an imported CSS Module |
-| `empty-css-module-selector` | `.marker { /* EMPTY */ }`                                                                    |
-| `unresolved-dynamic-class`  | `styles[getClassName()]`                                                                     |
-| `css-module-file-not-found` | `import styles from "./missing.module.css"`                                                  |
-| `css-parse-error`           | Unmatched braces in a CSS Module                                                             |
-| `source-parse-error`        | Reserved for source parser failures                                                          |
+The checker supports common React and TypeScript patterns, including default
+CSS Module imports, named exports, dot and bracket access, static constants,
+template literal unions, destructured aliases, `clsx`, and `classnames`. For
+concrete examples, see [Supported Patterns](docs/supported-patterns.md).
 
-## Supported Patterns
+## Why Use It
 
-See [Supported Patterns](docs/supported-patterns.md) for examples of supported CSS Module access patterns, `clsx`/`classnames` usage, and raw class string detection.
+CSS Modules make class names local, but they do not automatically prove that the
+source and stylesheet still agree. TypeScript typings can catch some missing
+classes, but they usually do not catch unused module selectors, raw string
+misuse, empty selectors, or missing module files.
+
+Stale Styles is designed to be:
+
+- CI-friendly: the CLI returns failing exit codes for error diagnostics.
+- Integration-friendly: the same analysis is available as a public Node.js API
+  and as an ESLint/Oxlint plugin.
+- Scoped to CSS Modules: identical class names can safely exist in different
+  module files because checks are tied to real imports.
+- Configurable: rules can be turned off, downgraded to warnings, or kept as
+  errors depending on migration needs.
+- Type-generation-free: no generated declaration files are required.
 
 ## Comparison
 
 Several popular tools help with CSS Modules or unused CSS, but they usually
 optimize for editor feedback, generated typings, lint integration, or production
-CSS pruning. `css-modules-class-checker` is focused on a narrower contract:
-checking that React/TypeScript source files and the CSS Modules they import stay
-in sync, with a standalone CLI and programmatic API that can run in CI/CD.
+CSS pruning. Stale Styles is focused on a narrower contract: checking that
+React/TypeScript source files and the CSS Modules they import stay in sync, with
+three public entry points depending on how you want to run the check:
 
-| Tool | Main focus | How `css-modules-class-checker` differs |
-| ---- | ---------- | --------------------------------------- |
-| [`typescript-plugin-css-modules`](https://www.npmjs.com/package/typescript-plugin-css-modules) | TypeScript language service plugin for CSS Modules editor completions and type information. | It improves the editor experience, but it is not a project checker you can run as a CLI in CI/CD. `css-modules-class-checker` can fail a pipeline when a module class is missing, when a CSS class is declared but never used, when a module class is written as a raw `className` string, or when a dynamic access cannot be resolved statically. |
-| [`typed-css-modules`](https://github.com/Quramy/typed-css-modules) / [`typed-scss-modules`](https://www.npmjs.com/package/typed-scss-modules) | Generate `.d.ts` files so TypeScript can type CSS/SCSS Module exports. | Generated typings catch some missing class accesses through TypeScript, but they do not detect unused CSS Module classes, raw string misuse, empty selectors, missing CSS Module files, or unresolved dynamic class names. This checker also avoids adding generated declaration files to the repo. |
-| [`eslint-plugin-css-modules`](https://www.npmjs.com/package/eslint-plugin-css-modules) | ESLint rules for undefined and unused CSS Module classes. | The latest npm version is `2.12.0`, last modified in 2023, and it does not explicitly target the current ESLint 10 line. This checker is independent from ESLint, exposes configurable rule severities, and covers additional source patterns such as `clsx`/`classnames`, bracket access, template literals, static constants, named exports, raw module classes in strings, empty CSS Module selectors, missing module files, and unresolved dynamic class accesses. |
-| [`eslint-plugin-postcss-modules`](https://www.npmjs.com/package/eslint-plugin-postcss-modules) | ESLint rules that use PostCSS to validate CSS Module exports. | The latest npm version is `2.0.0`, last modified in 2022, and it does not explicitly target the current ESLint 10 line. `css-modules-class-checker` runs without ESLint, reports CI-friendly diagnostics, and includes checks beyond exported class existence: unused local module classes, raw `className` strings, empty selectors, missing imported CSS Module files, CSS/source parse errors, and non-resolvable dynamic accesses. |
-| [`stylelint-no-unused-selectors`](https://npm.io/package/stylelint-no-unused-selectors) | Stylelint rule for finding unused selectors by comparing stylesheets with nearby documents such as JSX, TSX, or HTML. | It starts from selectors and nearby content. This checker starts from real CSS Module imports in JS/TS, which keeps classes scoped to the module file that exported them and lets it validate object-based usage like `styles.foo`, `styles["foo"]`, destructured aliases, named exports, and `clsx`/`classnames` compositions. |
-| [`PurgeCSS`](https://purgecss.com/) / [`purgecss`](https://www.npmjs.com/package/purgecss) | Remove unused CSS from production output by scanning content and stylesheets. | Purging is a build optimization step, not a source-contract validator. This checker does not mutate CSS output; it reports actionable diagnostics before merge/build when a component and its imported CSS Module drift apart. |
-| [`UnCSS`](https://github.com/uncss/uncss) / [`ucss`](https://www.npmjs.com/package/ucss) | Detect or remove unused CSS from HTML or rendered pages. | These tools are better suited to global CSS and page-level analysis. `css-modules-class-checker` is specialized for static analysis of React/TypeScript components that import CSS Modules, including same class names appearing safely in different module files. |
+- [`@stale-styles/cli`](packages/cli/README.md) for a standalone command and CI
+  exit codes.
+- [`@stale-styles/css-modules`](packages/css-modules-app/README.md) for a
+  programmatic Node.js API.
+- [`@stale-styles/eslint-plugin`](packages/eslint-plugin/README.md) for
+  ESLint/Oxlint workflows.
+
+| Tool | Main focus | How Stale Styles differs |
+| ---- | ---------- | ------------------------ |
+| [`typescript-plugin-css-modules`](https://www.npmjs.com/package/typescript-plugin-css-modules) | TypeScript language service plugin for CSS Modules editor completions and type information. | It improves the editor experience, but it is not a project checker you can run as a CLI in CI. Stale Styles can fail a pipeline when a module class is missing, when a CSS class is declared but never used, when a module class is written as a raw `className` string, or when a dynamic access cannot be resolved statically. |
+| [`typed-css-modules`](https://github.com/Quramy/typed-css-modules) / [`typed-scss-modules`](https://www.npmjs.com/package/typed-scss-modules) | Generate `.d.ts` files so TypeScript can type CSS/SCSS Module exports. | Generated typings catch some missing class accesses through TypeScript, but they do not detect unused CSS Module classes, raw string misuse, empty selectors, missing CSS Module files, or unresolved dynamic class names. Stale Styles also avoids adding generated declaration files to the repo. |
+| [`eslint-plugin-css-modules`](https://www.npmjs.com/package/eslint-plugin-css-modules) | ESLint rules for undefined and unused CSS Module classes. | Stale Styles now has its own lint plugin, but the lint plugin is only one entry point. The same analysis is also available through a standalone CLI and a public API, and it covers additional source patterns such as `clsx`/`classnames`, bracket access, template literals, static constants, named exports, raw module classes in strings, empty CSS Module selectors, missing module files, and unresolved dynamic class accesses. |
+| [`eslint-plugin-postcss-modules`](https://www.npmjs.com/package/eslint-plugin-postcss-modules) | ESLint rules that use PostCSS to validate CSS Module exports. | Stale Styles can be used inside lint workflows, but it is not tied to ESLint. It also reports CI-friendly diagnostics through the CLI and includes checks beyond exported class existence: unused local module classes, raw `className` strings, empty selectors, missing imported CSS Module files, CSS/source parse errors, and non-resolvable dynamic accesses. |
+| [`stylelint-no-unused-selectors`](https://npm.io/package/stylelint-no-unused-selectors) | Stylelint rule for finding unused selectors by comparing stylesheets with nearby documents such as JSX, TSX, or HTML. | It starts from selectors and nearby content. Stale Styles starts from real CSS Module imports in JS/TS, which keeps classes scoped to the module file that exported them and lets it validate object-based usage like `styles.foo`, `styles["foo"]`, destructured aliases, named exports, and `clsx`/`classnames` compositions. |
+| [`PurgeCSS`](https://purgecss.com/) / [`purgecss`](https://www.npmjs.com/package/purgecss) | Remove unused CSS from production output by scanning content and stylesheets. | Purging is a build optimization step, not a source-contract validator. Stale Styles does not mutate CSS output; it reports actionable diagnostics before merge/build when a component and its imported CSS Module drift apart. |
+| [`UnCSS`](https://github.com/uncss/uncss) / [`ucss`](https://www.npmjs.com/package/ucss) | Detect or remove unused CSS from HTML or rendered pages. | These tools are better suited to global CSS and page-level analysis. Stale Styles is specialized for static analysis of React/TypeScript components that import CSS Modules, including same class names appearing safely in different module files. |
 
 In short: type-generation and editor plugins help while writing code, ESLint and
-Stylelint plugins tie the check to their respective ecosystems, and CSS purgers
-optimize final output. `css-modules-class-checker` is meant to be a dedicated
-CSS Modules consistency check that can run locally, in scripts, or in CI/CD.
+Stylelint plugins tie checks to their respective ecosystems, and CSS purgers
+optimize final output. Stale Styles is meant to be a dedicated CSS Modules
+consistency check that can run locally, in scripts, in CI, through a Node.js API,
+or as lint rules.
 
 ## Known Limitations
 
-- By default, only `*.module.css` files are treated as CSS Modules. Use `matchFiles` to opt into other CSS Module filename conventions.
-- Non-resolvable dynamic classes such as `styles[getClassName()]` are reported as `unresolved-dynamic-class` instead of being guessed.
-- Raw string detection is scoped to files that import a CSS Module.
-- ID selectors and HTML tag selectors are not checked, and the checker cannot reliably know whether nested selectors are satisfied by rendered `children`. Selectors that depend on child ids or HTML tags may be reported as false positives.
-- Classes inside CSS Modules `:global(...)` selectors are ignored as local module classes. Mixed local/global compound selectors are not exhaustively modeled.
+- By default, only imports ending in `.module.css` are treated as CSS Modules.
+  The API and plugin support `matchFiles` for other conventions.
+- Non-resolvable dynamic classes are reported instead of guessed.
+- Raw string detection is scoped to files that import CSS Modules.
+- ID selectors and HTML tag selectors are not checked.
+- Selectors that depend on rendered children may produce false positives.
+- Classes inside `:global(...)` are ignored as local module classes.
+- Sass/Less parsing is not a first-class feature unless the compiled or imported
+  file is compatible with the supported CSS parser.

@@ -15,4 +15,7 @@ export function getRuleDescription(code: PluginDiagnosticCode): string {
     case "css-module-file-not-found":
       return "disallow imports of missing CSS Module files";
   }
+
+  code satisfies never;
+  throw new Error("Unknown rule code.");
 }

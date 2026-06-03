@@ -1,4 +1,4 @@
-import type { CheckSourceFileOptions } from "css-modules-class-checker-core";
+import type { CheckSourceFileOptions } from "@stale-styles/core";
 import type { PluginRuleOptions } from "./types";
 
 export function normalizeOptions(

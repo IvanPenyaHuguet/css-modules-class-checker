@@ -11,9 +11,12 @@
     "skipLibCheck": true,
     "declaration": true,
     "paths": {
-      "css-modules-class-checker-core": ["./packages/core/src/index.ts"],
-      "css-modules-class-checker": ["./packages/app/src/index.ts"],
-      "eslint-plugin-css-modules-class-checker": ["./packages/eslint-plugin/src/index.ts"]
+      "@stale-styles/core": ["./packages/core/src/index.ts"],
+      "@stale-styles/css-modules": ["./packages/css-modules-app/src/index.ts"],
+      "@stale-styles/eslint-plugin": ["./packages/eslint-plugin/src/index.ts"],
+      "@stale-styles/eslint-plugin/css-modules": [
+        "./packages/eslint-plugin/src/css-modules.ts"
+      ]
     },
     "ignoreDeprecations": "6.0",
     "types": ["node", "vitest/globals"]
