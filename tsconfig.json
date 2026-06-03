@@ -4,5 +4,9 @@
     "noEmit": true
   },
   "include": ["packages"],
-  "exclude": ["packages/*/dist", "packages/core/tests/uses/**/src"]
+  "exclude": [
+    "packages/*/dist",
+    "packages/core/tests/uses/**/src",
+    "packages/eslint-plugin/tests/fixtures"
+  ]
 }
