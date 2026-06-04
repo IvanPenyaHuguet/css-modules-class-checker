@@ -1,0 +1,19 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "missing-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "style.css",
+      "className": "secondary"
+    },
+    {
+      "code": "unused-css-module-class",
+      "severity": "error",
+      "filePath": "style.css",
+      "cssModulePath": "style.css",
+      "className": "primary"
+    }
+  ]
+}

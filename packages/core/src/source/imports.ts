@@ -28,7 +28,7 @@ export function findCssModuleImports(
       continue;
     }
 
-    const defaultSpecifier = statement.specifiers.find(isDefaultImportSpecifier);
+    const defaultSpecifier = statement.specifiers.find(isDefaultOrNamespaceImportSpecifier);
     const localName = getIdentifierName(
       defaultSpecifier && isAstImportSpecifier(defaultSpecifier)
         ? defaultSpecifier.local
@@ -80,6 +80,13 @@ function isAstImportSpecifier(node: unknown): node is AstNode & { local: unknown
 
 function isDefaultImportSpecifier(node: unknown): node is AstNode & { local: unknown } {
   return isAstImportSpecifier(node) && node.type === "ImportDefaultSpecifier";
+}
+
+function isDefaultOrNamespaceImportSpecifier(node: unknown): node is AstNode & { local: unknown } {
+  return (
+    isDefaultImportSpecifier(node) ||
+    (isAstImportSpecifier(node) && node.type === "ImportNamespaceSpecifier")
+  );
 }
 
 function isNamedImportSpecifier(

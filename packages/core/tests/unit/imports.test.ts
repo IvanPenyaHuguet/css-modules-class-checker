@@ -51,6 +51,28 @@ describe("CSS Module import extraction", () => {
     ]);
   });
 
+  it("finds namespace CSS Module imports", () => {
+    const source = `
+      import * as style from "./style.css";
+    `;
+    const filePath = path.resolve("/project/button.tsx");
+    const parsed = parseSourceFile(filePath, source);
+
+    if (!parsed.ok) {
+      throw new Error(parsed.message);
+    }
+
+    expect(findCssModuleImports(parsed.program, filePath, [/style\.css$/])).toEqual([
+      {
+        localName: "style",
+        namedImports: [],
+        importPath: "./style.css",
+        cssModulePath: path.resolve("/project/style.css"),
+        index: expect.any(Number)
+      }
+    ]);
+  });
+
   it("finds imports matched by custom regular expressions", () => {
     const source = `
       import styles from "./button.css";
