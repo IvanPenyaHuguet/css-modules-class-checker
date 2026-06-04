@@ -1,0 +1,18 @@
+.reset {
+  appearance: none;
+}
+
+.base {
+  color: red;
+}
+
+.button {
+  composes: reset base;
+  color: blue;
+}
+
+.icon {
+  composes: reset;
+  composes: base;
+  display: inline-block;
+}

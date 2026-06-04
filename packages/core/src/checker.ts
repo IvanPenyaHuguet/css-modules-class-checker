@@ -21,6 +21,7 @@ import type {
 type CssModuleRecord = {
   classes: Set<string>;
   importableClasses: Map<string, Set<string>>;
+  composedClasses: Map<string, Set<string>>;
   emptyClasses: Set<string>;
   locations: Map<string, SourceLocation>;
   usedClasses: Set<string>;
@@ -156,6 +157,7 @@ async function analyzeSourceFile(
       cssModules.set(cssImport.cssModulePath, {
         classes: extracted.classes,
         importableClasses: extracted.importableClasses,
+        composedClasses: extracted.composedClasses,
         emptyClasses: extracted.emptyClasses,
         locations: extracted.locations,
         usedClasses: new Set(),
@@ -248,6 +250,7 @@ function analyzeSourceFileSync(
       cssModules.set(cssImport.cssModulePath, {
         classes: extracted.classes,
         importableClasses: extracted.importableClasses,
+        composedClasses: extracted.composedClasses,
         emptyClasses: extracted.emptyClasses,
         locations: extracted.locations,
         usedClasses: new Set(),
@@ -325,7 +328,7 @@ function analyzeUsages(
 
     if (usedClasses) {
       for (const className of usedClasses) {
-        cssModule.usedClasses.add(className);
+        markClassUsed(cssModule, className);
       }
       continue;
     }
@@ -352,7 +355,7 @@ function analyzeUsages(
       const cssModule = cssModules.get(cssImport.cssModulePath);
 
       if (cssModule?.classes.has(rawUsage.className)) {
-        cssModule.usedClasses.add(rawUsage.className);
+        markClassUsed(cssModule, rawUsage.className);
       }
     }
 
@@ -363,6 +366,18 @@ function analyzeUsages(
       className: rawUsage.className,
       location: rawUsage.location
     });
+  }
+}
+
+function markClassUsed(cssModule: CssModuleRecord, className: string): void {
+  if (cssModule.usedClasses.has(className)) {
+    return;
+  }
+
+  cssModule.usedClasses.add(className);
+
+  for (const composedClassName of cssModule.composedClasses.get(className) ?? []) {
+    markClassUsed(cssModule, composedClassName);
   }
 }
 

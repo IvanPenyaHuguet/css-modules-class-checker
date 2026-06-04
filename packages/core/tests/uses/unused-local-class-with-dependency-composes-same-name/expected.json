@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "unused-css-module-class",
+      "severity": "error",
+      "filePath": "button.module.css",
+      "cssModulePath": "button.module.css",
+      "className": "base"
+    }
+  ]
+}

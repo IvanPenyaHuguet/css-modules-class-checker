@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { Features, transform, type Selector } from "lightningcss";
+import { Features, transform, type CSSModuleExports, type Selector } from "lightningcss";
 import { getLocalClassNames } from "../config";
 import { getLocation } from "../locations";
 import type { LocalsConvention, SourceLocation } from "../types";
@@ -9,6 +9,7 @@ export type CssClassExtraction =
       ok: true;
       classes: Set<string>;
       importableClasses: Map<string, Set<string>>;
+      composedClasses: Map<string, Set<string>>;
       emptyClasses: Set<string>;
       locations: Map<string, SourceLocation>;
     }
@@ -26,7 +27,8 @@ export function extractCssClasses(
       cssModules: { pattern: "[local]" },
       include: Features.Nesting
     });
-    const exportedClasses = new Set(Object.keys(transformed.exports ?? {}));
+    const exports = transformed.exports ?? {};
+    const exportedClasses = new Set(Object.keys(exports));
     const classes = getStandaloneClasses(transformed.code, filename, exportedClasses);
     addSameSelectorCompoundClasses(source, filename, exportedClasses, classes);
     const emptyClasses = getEmptyStandaloneClasses(source, filename);
@@ -40,6 +42,7 @@ export function extractCssClasses(
       ok: true,
       classes,
       importableClasses: getImportableClasses(classes, filename, localsConvention),
+      composedClasses: getComposedClasses(exports),
       emptyClasses,
       locations
     };
@@ -53,6 +56,22 @@ export function extractCssClasses(
       column: loc.column
     };
   }
+}
+
+function getComposedClasses(exports: CSSModuleExports): Map<string, Set<string>> {
+  const composedClasses = new Map<string, Set<string>>();
+
+  for (const [className, cssModuleExport] of Object.entries(exports)) {
+    for (const reference of cssModuleExport.composes) {
+      if (reference.type !== "local") {
+        continue;
+      }
+
+      addImportableClass(composedClasses, className, reference.name);
+    }
+  }
+
+  return composedClasses;
 }
 
 function getImportableClasses(

@@ -1,0 +1,11 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "raw-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "className": "button"
+    }
+  ]
+}

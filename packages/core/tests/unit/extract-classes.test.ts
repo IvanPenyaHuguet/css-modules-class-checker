@@ -239,4 +239,55 @@ describe("CSS class extraction", () => {
 
     expect([...result.importableClasses.keys()].sort()).toEqual(["isActive", "primary_button"]);
   });
+
+  it("extracts local composed class relationships", () => {
+    const result = extractCssClasses(`
+      .reset {
+        appearance: none;
+      }
+
+      .base {
+        composes: reset;
+        color: red;
+      }
+
+      .button {
+        composes: base;
+        color: blue;
+      }
+    `);
+
+    expect(result.ok).toBe(true);
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    const composedClasses = [...result.composedClasses.entries()]
+      .map<[string, string[]]>(([className, classNames]) => [className, [...classNames].sort()])
+      .sort(([classNameA], [classNameB]) => classNameA.localeCompare(classNameB));
+
+    expect(composedClasses).toEqual([
+      ["base", ["reset"]],
+      ["button", ["base"]]
+    ]);
+  });
+
+  it("keeps global and dependency composes out of local composed classes", () => {
+    const result = extractCssClasses(`
+      .button {
+        composes: reset from "./reset.module.css";
+        composes: global-reset from global;
+        color: blue;
+      }
+    `);
+
+    expect(result.ok).toBe(true);
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    expect([...result.composedClasses.entries()]).toEqual([]);
+  });
 });
