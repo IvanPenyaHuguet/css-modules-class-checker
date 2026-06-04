@@ -36,7 +36,11 @@ export function findCssModuleClassUsages(
     const identifierName = getIdentifierName(node);
     const namedImport = identifierName ? namedImportsByLocalName.get(identifierName) : undefined;
 
-    if (namedImport && !isNonUsageIdentifier(node, ancestors)) {
+    if (
+      namedImport &&
+      !isNonUsageIdentifier(node, ancestors) &&
+      !isShadowedReference(identifierName, node, ancestors)
+    ) {
       usages.push({
         kind: "resolved",
         localName: namedImport.namedImport.localName,
@@ -54,7 +58,7 @@ export function findCssModuleClassUsages(
     const objectName = getIdentifierName(node.object);
     const cssImport = objectName ? importsByLocalName.get(objectName) : undefined;
 
-    if (!cssImport) {
+    if (!cssImport || isShadowedReference(objectName, node.object, ancestors)) {
       return;
     }
 
@@ -120,6 +124,160 @@ function isNonUsageIdentifier(node: AstNode, ancestors: AstNode[]): boolean {
 
   if (parent?.type === "Property" && parent.key === node && parent.computed !== true) {
     return true;
+  }
+
+  if (parent?.type === "TSPropertySignature" && parent.key === node && parent.computed !== true) {
+    return true;
+  }
+
+  return false;
+}
+
+function isShadowedReference(
+  name: string | undefined,
+  reference: unknown,
+  ancestors: AstNode[]
+): boolean {
+  if (!name || !isAstNode(reference)) {
+    return false;
+  }
+
+  const referenceIndex = reference.start ?? 0;
+
+  return ancestors.some((ancestor) => {
+    if (!createsLocalScope(ancestor)) {
+      return false;
+    }
+
+    return hasLocalBindingBeforeReference(ancestor, name, referenceIndex);
+  });
+}
+
+function createsLocalScope(node: AstNode): boolean {
+  return (
+    node.type === "BlockStatement" ||
+    node.type === "FunctionDeclaration" ||
+    node.type === "FunctionExpression" ||
+    node.type === "ArrowFunctionExpression"
+  );
+}
+
+function hasLocalBindingBeforeReference(
+  scope: AstNode,
+  name: string,
+  referenceIndex: number
+): boolean {
+  if (declaresParameter(scope, name)) {
+    return true;
+  }
+
+  return hasVariableBindingBeforeReference(scope, name, referenceIndex);
+}
+
+function declaresParameter(scope: AstNode, name: string): boolean {
+  const params = Array.isArray(scope.params) ? scope.params : [];
+
+  return params.some((param) => bindingContainsName(param, name));
+}
+
+function hasVariableBindingBeforeReference(
+  node: AstNode,
+  name: string,
+  referenceIndex: number
+): boolean {
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "parent" || key === "params" || key === "id") {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      if (
+        value.some((item) => hasVariableBindingBeforeReferenceInChild(item, name, referenceIndex))
+      ) {
+        return true;
+      }
+
+      continue;
+    }
+
+    if (hasVariableBindingBeforeReferenceInChild(value, name, referenceIndex)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasVariableBindingBeforeReferenceInChild(
+  child: unknown,
+  name: string,
+  referenceIndex: number
+): boolean {
+  if (!isAstNode(child)) {
+    return false;
+  }
+
+  if ((child.start ?? Number.POSITIVE_INFINITY) > referenceIndex) {
+    return false;
+  }
+
+  if (child.type === "FunctionDeclaration") {
+    return bindingContainsName(child.id, name) && (child.start ?? 0) <= referenceIndex;
+  }
+
+  if (
+    child.type === "FunctionExpression" ||
+    child.type === "ArrowFunctionExpression" ||
+    child.type === "ClassDeclaration" ||
+    child.type === "ClassExpression"
+  ) {
+    return false;
+  }
+
+  if (child.type === "VariableDeclarator") {
+    return bindingContainsName(child.id, name) && (child.start ?? 0) <= referenceIndex;
+  }
+
+  return hasVariableBindingBeforeReference(child, name, referenceIndex);
+}
+
+function bindingContainsName(binding: unknown, name: string): boolean {
+  if (!isAstNode(binding)) {
+    return false;
+  }
+
+  if (getIdentifierName(binding) === name) {
+    return true;
+  }
+
+  if (binding.type === "AssignmentPattern") {
+    return bindingContainsName(binding.left, name);
+  }
+
+  if (binding.type === "RestElement") {
+    return bindingContainsName(binding.argument, name);
+  }
+
+  if (binding.type === "ObjectPattern") {
+    const properties = Array.isArray(binding.properties) ? binding.properties : [];
+
+    return properties.some((property) => {
+      if (!isAstNode(property)) {
+        return false;
+      }
+
+      if (property.type === "RestElement") {
+        return bindingContainsName(property.argument, name);
+      }
+
+      return bindingContainsName(property.value, name);
+    });
+  }
+
+  if (binding.type === "ArrayPattern") {
+    const elements = Array.isArray(binding.elements) ? binding.elements : [];
+
+    return elements.some((element) => bindingContainsName(element, name));
   }
 
   return false;

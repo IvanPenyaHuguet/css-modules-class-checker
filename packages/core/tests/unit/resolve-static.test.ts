@@ -59,6 +59,23 @@ describe("createStaticResolver", () => {
 
     expect(resolved).toEqual([["primary"], ["secondary"]]);
   });
+
+  it("resolves identifiers from the scope visible at the class access", () => {
+    const resolved = resolveComputedStyleProperties(`
+      import styles from "./button.module.css";
+
+      const variant = "primary";
+
+      function helper() {
+        const variant = "ghost";
+        return variant;
+      }
+
+      styles[variant];
+    `);
+
+    expect(resolved).toEqual([["primary"]]);
+  });
 });
 
 function resolveComputedStyleProperties(source: string): string[][] {

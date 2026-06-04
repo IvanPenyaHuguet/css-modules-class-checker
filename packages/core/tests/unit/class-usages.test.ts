@@ -61,6 +61,64 @@ describe("class usage extraction", () => {
     expect(resolvedClassNames(usages)).toEqual(["one", "two"]);
   });
 
+  it("ignores default import member access when the local name is shadowed", () => {
+    const source = `
+      import styles from "./button.module.css";
+
+      function helper(styles: { ghost: string }) {
+        return styles.ghost;
+      }
+
+      styles.real;
+    `;
+    const program = parseProgram(source);
+    const usages = findCssModuleClassUsages(source, program, [cssImport]);
+
+    expect(resolvedClassNames(usages)).toEqual(["real"]);
+  });
+
+  it("ignores named import identifiers when the local name is shadowed", () => {
+    const source = `
+      import { primary } from "./button.module.css";
+
+      [1].map((primary) => primary);
+    `;
+    const program = parseProgram(source);
+    const usages = findCssModuleClassUsages(source, program, [
+      {
+        localName: undefined,
+        namedImports: [{ importedName: "primary", localName: "primary", index: 0 }],
+        importPath: "./button.module.css",
+        cssModulePath: "/project/button.module.css",
+        index: 0
+      }
+    ]);
+
+    expect(resolvedClassNames(usages)).toEqual([]);
+  });
+
+  it("does not count type literal property keys as named import usages", () => {
+    const source = `
+      import { primary } from "./button.module.css";
+
+      type Props = {
+        primary: string;
+      };
+    `;
+    const program = parseProgram(source);
+    const usages = findCssModuleClassUsages(source, program, [
+      {
+        localName: undefined,
+        namedImports: [{ importedName: "primary", localName: "primary", index: 0 }],
+        importPath: "./button.module.css",
+        cssModulePath: "/project/button.module.css",
+        index: 0
+      }
+    ]);
+
+    expect(resolvedClassNames(usages)).toEqual([]);
+  });
+
   it("finds raw class strings in clsx/classnames/manual/template composition", () => {
     const source = `
       import clsx from "clsx";

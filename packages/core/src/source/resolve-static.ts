@@ -10,36 +10,52 @@ import {
 export function createStaticResolver(
   program: AstNode
 ): (expression: AstNode) => string[] | undefined {
-  const constants = new Map<string, string[]>();
-  const objectConstants = new Map<string, Map<string, string[]>>();
+  const constants: ScopedBinding<string[] | undefined>[] = [];
+  const objectConstants: ScopedBinding<Map<string, string[]>>[] = [];
   const typeAliases = new Map<string, string[]>();
   const objectTypeAliases = new Map<string, Map<string, string[]>>();
 
-  walkAst(program, (node) => {
+  walkAst(program, (node, ancestors) => {
     if (node.type === "TSTypeAliasDeclaration") {
       collectTypeAlias(node, objectConstants, typeAliases, objectTypeAliases);
       return;
     }
 
     if (node.type === "TSEnumDeclaration") {
-      collectEnumDeclaration(node, objectConstants);
+      collectEnumDeclaration(node, ancestors, objectConstants);
       return;
     }
 
     if (node.type === "VariableDeclarator") {
-      collectVariableDeclarator(node, constants, objectConstants);
+      collectVariableDeclarator(node, ancestors, constants, objectConstants, typeAliases);
       return;
     }
 
-    collectTypedBinding(node, constants, objectConstants, typeAliases, objectTypeAliases);
+    collectTypedBinding(
+      node,
+      ancestors,
+      constants,
+      objectConstants,
+      typeAliases,
+      objectTypeAliases
+    );
   });
 
   return (expression: AstNode) => resolveExpression(expression, constants, objectConstants);
 }
 
+type ScopedBinding<T> = {
+  name: string;
+  value: T;
+  declarationIndex: number;
+  scopeStart: number;
+  scopeEnd: number;
+  scopeDepth: number;
+};
+
 function collectTypeAlias(
   node: AstNode,
-  objectConstants: Map<string, Map<string, string[]>>,
+  objectConstants: ScopedBinding<Map<string, string[]>>[],
   typeAliases: Map<string, string[]>,
   objectTypeAliases: Map<string, Map<string, string[]>>
 ): void {
@@ -69,7 +85,8 @@ function collectTypeAlias(
 
 function collectEnumDeclaration(
   node: AstNode,
-  objectConstants: Map<string, Map<string, string[]>>
+  ancestors: AstNode[],
+  objectConstants: ScopedBinding<Map<string, string[]>>[]
 ): void {
   const identifier = getIdentifierName(node.id);
   const members = isAstNode(node.body) && Array.isArray(node.body.members) ? node.body.members : [];
@@ -95,14 +112,16 @@ function collectEnumDeclaration(
   }
 
   if (enumValues.size > 0) {
-    objectConstants.set(identifier, enumValues);
+    objectConstants.push(createScopedBinding(identifier, enumValues, node, ancestors));
   }
 }
 
 function collectVariableDeclarator(
   node: AstNode,
-  constants: Map<string, string[]>,
-  objectConstants: Map<string, Map<string, string[]>>
+  ancestors: AstNode[],
+  constants: ScopedBinding<string[] | undefined>[],
+  objectConstants: ScopedBinding<Map<string, string[]>>[],
+  typeAliases: Map<string, string[]>
 ): void {
   const identifier = getIdentifierName(node.id);
 
@@ -110,24 +129,35 @@ function collectVariableDeclarator(
     return;
   }
 
+  const typedValues =
+    isAstNode(node.id) && isAstNode(node.id.typeAnnotation)
+      ? resolveTypeAnnotation(node.id.typeAnnotation, objectConstants, typeAliases)
+      : undefined;
+
+  if (typedValues) {
+    constants.push(createScopedBinding(identifier, typedValues, node, ancestors));
+    return;
+  }
+
   const objectResolved = resolveObjectExpression(node.init, constants, objectConstants);
 
   if (objectResolved) {
-    objectConstants.set(identifier, objectResolved);
+    objectConstants.push(createScopedBinding(identifier, objectResolved, node, ancestors));
     return;
   }
 
   const resolved = resolveExpression(node.init, constants, objectConstants);
 
   if (resolved) {
-    constants.set(identifier, resolved);
+    constants.push(createScopedBinding(identifier, resolved, node, ancestors));
   }
 }
 
 function collectTypedBinding(
   node: AstNode,
-  constants: Map<string, string[]>,
-  objectConstants: Map<string, Map<string, string[]>>,
+  ancestors: AstNode[],
+  constants: ScopedBinding<string[] | undefined>[],
+  objectConstants: ScopedBinding<Map<string, string[]>>[],
   typeAliases: Map<string, string[]>,
   objectTypeAliases: Map<string, Map<string, string[]>>
 ): void {
@@ -136,9 +166,7 @@ function collectTypedBinding(
   if (identifier && isAstNode(node.typeAnnotation)) {
     const resolved = resolveTypeAnnotation(node.typeAnnotation, objectConstants, typeAliases);
 
-    if (resolved) {
-      constants.set(identifier, resolved);
-    }
+    constants.push(createScopedBinding(identifier, resolved, node, ancestors));
   }
 
   if (node.type !== "ObjectPattern" || !isAstNode(node.typeAnnotation)) {
@@ -151,24 +179,35 @@ function collectTypedBinding(
     typeAliases,
     objectTypeAliases
   );
-
   if (!objectTypeProperties) {
+    for (const bindingName of collectObjectPatternBindingNames(node)) {
+      constants.push(createScopedBinding(bindingName, undefined, node, ancestors));
+    }
     return;
   }
+
+  const collectedBindingNames = new Set<string>();
 
   for (const [propertyName, propertyValues] of objectTypeProperties) {
     const bindingName = findObjectPatternBindingName(node, propertyName);
 
     if (bindingName) {
-      constants.set(bindingName, propertyValues);
+      collectedBindingNames.add(bindingName);
+      constants.push(createScopedBinding(bindingName, propertyValues, node, ancestors));
+    }
+  }
+
+  for (const bindingName of collectObjectPatternBindingNames(node)) {
+    if (!collectedBindingNames.has(bindingName)) {
+      constants.push(createScopedBinding(bindingName, undefined, node, ancestors));
     }
   }
 }
 
 function resolveExpression(
   expression: AstNode,
-  constants: Map<string, string[]>,
-  objectConstants: Map<string, Map<string, string[]>>
+  constants: ScopedBinding<string[] | undefined>[],
+  objectConstants: ScopedBinding<Map<string, string[]>>[]
 ): string[] | undefined {
   const literal = getStringLiteralValue(expression);
 
@@ -183,7 +222,7 @@ function resolveExpression(
   const identifier = getIdentifierName(expression);
 
   if (identifier) {
-    return constants.get(identifier);
+    return findVisibleBinding(constants, identifier, expression)?.value;
   }
 
   if (expression.type === "MemberExpression") {
@@ -191,7 +230,7 @@ function resolveExpression(
     const propertyName = getStaticPropertyName(expression.property);
 
     if (objectName && propertyName) {
-      return objectConstants.get(objectName)?.get(propertyName);
+      return findVisibleBinding(objectConstants, objectName, expression)?.value.get(propertyName);
     }
   }
 
@@ -224,7 +263,7 @@ function resolveExpression(
 
 function getObjectTypeProperties(
   annotation: AstNode,
-  objectConstants: Map<string, Map<string, string[]>>,
+  objectConstants: ScopedBinding<Map<string, string[]>>[],
   typeAliases: Map<string, string[]>,
   objectTypeAliases: Map<string, Map<string, string[]>>
 ): Map<string, string[]> | undefined {
@@ -248,7 +287,7 @@ function getObjectTypeProperties(
 
 function resolveObjectTypeAnnotation(
   annotation: AstNode,
-  objectConstants: Map<string, Map<string, string[]>>,
+  objectConstants: ScopedBinding<Map<string, string[]>>[],
   typeAliases: Map<string, string[]>
 ): Map<string, string[]> | undefined {
   const typeNode = getTypeAnnotationBody(annotation);
@@ -281,8 +320,8 @@ function resolveObjectTypeAnnotation(
 
 function resolveObjectExpression(
   expression: AstNode,
-  constants: Map<string, string[]>,
-  objectConstants: Map<string, Map<string, string[]>>
+  constants: ScopedBinding<string[] | undefined>[],
+  objectConstants: ScopedBinding<Map<string, string[]>>[]
 ): Map<string, string[]> | undefined {
   const objectExpression =
     expression.type === "TSAsExpression" && isAstNode(expression.expression)
@@ -318,8 +357,8 @@ function resolveObjectExpression(
 
 function resolveTemplateLiteral(
   expression: AstNode,
-  constants: Map<string, string[]>,
-  objectConstants: Map<string, Map<string, string[]>>
+  constants: ScopedBinding<string[] | undefined>[],
+  objectConstants: ScopedBinding<Map<string, string[]>>[]
 ): string[] | undefined {
   const quasis = Array.isArray(expression.quasis) ? expression.quasis : [];
   const expressions = Array.isArray(expression.expressions) ? expression.expressions : [];
@@ -384,7 +423,7 @@ function getTemplateQuasiValue(quasi: unknown): string | undefined {
 
 function resolveTypeAnnotation(
   annotation: AstNode,
-  objectConstants: Map<string, Map<string, string[]>>,
+  objectConstants: ScopedBinding<Map<string, string[]>>[],
   typeAliases: Map<string, string[]>
 ): string[] | undefined {
   const typeNode = getTypeAnnotationBody(annotation);
@@ -427,7 +466,10 @@ function resolveTypeAnnotation(
   if (typeNode.type === "TSTypeReference") {
     const typeName = getIdentifierName(typeNode.typeName);
     return typeName
-      ? (typeAliases.get(typeName) ?? resolveObjectConstantValues(objectConstants.get(typeName)))
+      ? (typeAliases.get(typeName) ??
+          resolveObjectConstantValues(
+            findVisibleBinding(objectConstants, typeName, typeNode)?.value
+          ))
       : undefined;
   }
 
@@ -440,7 +482,7 @@ function resolveTypeAnnotation(
 
 function resolveIndexedAccessType(
   typeNode: AstNode,
-  objectConstants: Map<string, Map<string, string[]>>
+  objectConstants: ScopedBinding<Map<string, string[]>>[]
 ): string[] | undefined {
   const objectName = getTypeQueryName(typeNode.objectType);
 
@@ -448,7 +490,7 @@ function resolveIndexedAccessType(
     return undefined;
   }
 
-  const objectValues = objectConstants.get(objectName);
+  const objectValues = findVisibleBinding(objectConstants, objectName, typeNode)?.value;
 
   return resolveObjectConstantValues(objectValues);
 }
@@ -488,6 +530,71 @@ function getTypeAnnotationBody(annotation: AstNode): AstNode | undefined {
   return annotation;
 }
 
+function createScopedBinding<T>(
+  name: string,
+  value: T,
+  node: AstNode,
+  ancestors: AstNode[]
+): ScopedBinding<T> {
+  const scope = getNearestValueScope(node, ancestors);
+
+  return {
+    name,
+    value,
+    declarationIndex: node.start ?? 0,
+    scopeStart: scope.start ?? 0,
+    scopeEnd: scope.end ?? Number.POSITIVE_INFINITY,
+    scopeDepth: scope.depth
+  };
+}
+
+function getNearestValueScope(node: AstNode, ancestors: AstNode[]): AstNode & { depth: number } {
+  for (let index = ancestors.length - 1; index >= 0; index -= 1) {
+    const ancestor = ancestors[index];
+
+    if (isValueScope(ancestor)) {
+      return { ...ancestor, depth: index };
+    }
+  }
+
+  return { ...node, start: 0, end: Number.POSITIVE_INFINITY, depth: 0 };
+}
+
+function isValueScope(node: AstNode): boolean {
+  return (
+    node.type === "Program" ||
+    node.type === "BlockStatement" ||
+    node.type === "FunctionDeclaration" ||
+    node.type === "FunctionExpression" ||
+    node.type === "ArrowFunctionExpression"
+  );
+}
+
+function findVisibleBinding<T>(
+  bindings: ScopedBinding<T>[],
+  name: string,
+  expression: AstNode
+): ScopedBinding<T> | undefined {
+  const index = expression.start ?? 0;
+
+  return bindings
+    .filter((binding) => {
+      return (
+        binding.name === name &&
+        binding.declarationIndex <= index &&
+        binding.scopeStart <= index &&
+        index <= binding.scopeEnd
+      );
+    })
+    .sort((left, right) => {
+      return (
+        right.scopeDepth - left.scopeDepth ||
+        right.scopeStart - left.scopeStart ||
+        right.declarationIndex - left.declarationIndex
+      );
+    })[0];
+}
+
 function findObjectPatternBindingName(pattern: AstNode, propertyName: string): string | undefined {
   const properties = Array.isArray(pattern.properties) ? pattern.properties : [];
 
@@ -504,6 +611,58 @@ function findObjectPatternBindingName(pattern: AstNode, propertyName: string): s
   }
 
   return undefined;
+}
+
+function collectObjectPatternBindingNames(pattern: AstNode): string[] {
+  const properties = Array.isArray(pattern.properties) ? pattern.properties : [];
+
+  return properties.flatMap((property) => {
+    if (!isAstNode(property)) {
+      return [];
+    }
+
+    if (property.type === "RestElement") {
+      return collectBindingNames(property.argument);
+    }
+
+    if (property.type === "Property") {
+      return collectBindingNames(property.value);
+    }
+
+    return [];
+  });
+}
+
+function collectBindingNames(node: unknown): string[] {
+  const identifier = getIdentifierName(node);
+
+  if (identifier) {
+    return [identifier];
+  }
+
+  if (!isAstNode(node)) {
+    return [];
+  }
+
+  if (node.type === "AssignmentPattern") {
+    return collectBindingNames(node.left);
+  }
+
+  if (node.type === "RestElement") {
+    return collectBindingNames(node.argument);
+  }
+
+  if (node.type === "ObjectPattern") {
+    return collectObjectPatternBindingNames(node);
+  }
+
+  if (node.type === "ArrayPattern") {
+    const elements = Array.isArray(node.elements) ? node.elements : [];
+
+    return elements.flatMap((element) => collectBindingNames(element));
+  }
+
+  return [];
 }
 
 function getBindingName(node: unknown): string | undefined {
