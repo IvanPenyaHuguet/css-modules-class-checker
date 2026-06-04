@@ -13,6 +13,7 @@ import type {
   CheckSourceFileOptions,
   Diagnostic,
   DiagnosticCode,
+  CssModuleImport,
   RuleLevel,
   SourceLocation
 } from "./types";
@@ -119,7 +120,7 @@ async function analyzeSourceFile(
     return;
   }
 
-  let shouldAnalyzeUsages = true;
+  const analyzableImports: CssModuleImport[] = [];
 
   for (const cssImport of imports) {
     if (!existsSync(cssImport.cssModulePath)) {
@@ -130,51 +131,52 @@ async function analyzeSourceFile(
         cssModulePath: cssImport.cssModulePath,
         location: { index: cssImport.index, line: 1, column: 1 }
       });
-      shouldAnalyzeUsages = false;
       continue;
+    }
+
+    if (!cssModules.has(cssImport.cssModulePath)) {
+      const cssSource = await readFile(cssImport.cssModulePath, "utf8");
+      const extracted = extractCssClasses(
+        cssSource,
+        cssImport.cssModulePath,
+        options.localsConvention
+      );
+
+      if (!extracted.ok) {
+        pushDiagnostic(diagnostics, rules, {
+          code: "css-parse-error",
+          message: extracted.message,
+          filePath,
+          cssModulePath: cssImport.cssModulePath,
+          location: { index: cssImport.index, line: extracted.line, column: extracted.column }
+        });
+        continue;
+      }
+
+      cssModules.set(cssImport.cssModulePath, {
+        classes: extracted.classes,
+        importableClasses: extracted.importableClasses,
+        emptyClasses: extracted.emptyClasses,
+        locations: extracted.locations,
+        usedClasses: new Set(),
+        hasUnresolvedUsage: false
+      });
     }
 
     if (cssModules.has(cssImport.cssModulePath)) {
+      analyzableImports.push(cssImport);
       continue;
     }
-
-    const cssSource = await readFile(cssImport.cssModulePath, "utf8");
-    const extracted = extractCssClasses(
-      cssSource,
-      cssImport.cssModulePath,
-      options.localsConvention
-    );
-
-    if (!extracted.ok) {
-      pushDiagnostic(diagnostics, rules, {
-        code: "css-parse-error",
-        message: extracted.message,
-        filePath,
-        cssModulePath: cssImport.cssModulePath,
-        location: { index: cssImport.index, line: extracted.line, column: extracted.column }
-      });
-      shouldAnalyzeUsages = false;
-      continue;
-    }
-
-    cssModules.set(cssImport.cssModulePath, {
-      classes: extracted.classes,
-      importableClasses: extracted.importableClasses,
-      emptyClasses: extracted.emptyClasses,
-      locations: extracted.locations,
-      usedClasses: new Set(),
-      hasUnresolvedUsage: false
-    });
   }
 
-  if (!shouldAnalyzeUsages) {
+  if (analyzableImports.length === 0) {
     return;
   }
 
   analyzeUsages(
     source,
     parsedSource.program,
-    imports,
+    analyzableImports,
     filePath,
     options,
     rules,
@@ -210,7 +212,7 @@ function analyzeSourceFileSync(
     return;
   }
 
-  let shouldAnalyzeUsages = true;
+  const analyzableImports: CssModuleImport[] = [];
 
   for (const cssImport of imports) {
     if (!existsSync(cssImport.cssModulePath)) {
@@ -221,51 +223,52 @@ function analyzeSourceFileSync(
         cssModulePath: cssImport.cssModulePath,
         location: { index: cssImport.index, line: 1, column: 1 }
       });
-      shouldAnalyzeUsages = false;
       continue;
+    }
+
+    if (!cssModules.has(cssImport.cssModulePath)) {
+      const cssSource = readFileSync(cssImport.cssModulePath, "utf8");
+      const extracted = extractCssClasses(
+        cssSource,
+        cssImport.cssModulePath,
+        options.localsConvention
+      );
+
+      if (!extracted.ok) {
+        pushDiagnostic(diagnostics, rules, {
+          code: "css-parse-error",
+          message: extracted.message,
+          filePath,
+          cssModulePath: cssImport.cssModulePath,
+          location: { index: cssImport.index, line: extracted.line, column: extracted.column }
+        });
+        continue;
+      }
+
+      cssModules.set(cssImport.cssModulePath, {
+        classes: extracted.classes,
+        importableClasses: extracted.importableClasses,
+        emptyClasses: extracted.emptyClasses,
+        locations: extracted.locations,
+        usedClasses: new Set(),
+        hasUnresolvedUsage: false
+      });
     }
 
     if (cssModules.has(cssImport.cssModulePath)) {
+      analyzableImports.push(cssImport);
       continue;
     }
-
-    const cssSource = readFileSync(cssImport.cssModulePath, "utf8");
-    const extracted = extractCssClasses(
-      cssSource,
-      cssImport.cssModulePath,
-      options.localsConvention
-    );
-
-    if (!extracted.ok) {
-      pushDiagnostic(diagnostics, rules, {
-        code: "css-parse-error",
-        message: extracted.message,
-        filePath,
-        cssModulePath: cssImport.cssModulePath,
-        location: { index: cssImport.index, line: extracted.line, column: extracted.column }
-      });
-      shouldAnalyzeUsages = false;
-      continue;
-    }
-
-    cssModules.set(cssImport.cssModulePath, {
-      classes: extracted.classes,
-      importableClasses: extracted.importableClasses,
-      emptyClasses: extracted.emptyClasses,
-      locations: extracted.locations,
-      usedClasses: new Set(),
-      hasUnresolvedUsage: false
-    });
   }
 
-  if (!shouldAnalyzeUsages) {
+  if (analyzableImports.length === 0) {
     return;
   }
 
   analyzeUsages(
     source,
     parsedSource.program,
-    imports,
+    analyzableImports,
     filePath,
     options,
     rules,
@@ -291,7 +294,13 @@ function analyzeUsages(
 
   for (const usage of findCssModuleClassUsages(source, program, imports)) {
     if (usage.kind === "unresolved") {
-      cssModules.get(usage.cssModulePath)!.hasUnresolvedUsage = true;
+      const cssModule = cssModules.get(usage.cssModulePath);
+
+      if (!cssModule) {
+        continue;
+      }
+
+      cssModule.hasUnresolvedUsage = true;
       pushDiagnostic(diagnostics, rules, {
         code: "unresolved-dynamic-class",
         message: `Cannot statically resolve dynamic class access on ${usage.localName}.`,

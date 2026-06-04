@@ -1,0 +1,25 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "css-module-file-not-found",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "missing.module.css"
+    },
+    {
+      "code": "missing-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "valid.module.css",
+      "className": "ghost"
+    },
+    {
+      "code": "unused-css-module-class",
+      "severity": "error",
+      "filePath": "valid.module.css",
+      "cssModulePath": "valid.module.css",
+      "className": "unused"
+    }
+  ]
+}

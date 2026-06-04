@@ -132,3 +132,12 @@ npm run format:check --workspace @stale-styles/eslint-plugin
   project check with CI exit codes.
 - [`@stale-styles/css-modules`](../css-modules-app/README.md) is better when
   you want to call the checker directly from Node.js.
+
+## Known Limitations
+
+The lint plugin analyzes each source file independently. Because of that,
+`@stale-styles/unused-css-module-class` can report a false positive when the
+same CSS Module is imported by multiple source files and a class is used only by
+a different source file than the one currently being linted.
+
+For project-wide unused class checks, prefer the standalone CLI or core API.
