@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { Linter } from "eslint";
 import type { Plugin, Rule } from "@oxlint/plugins";
-import { getDiagnostics } from "../../src/diagnostics";
 import { configs, rules } from "../../src/index";
 import { normalizeOptions } from "../../src/options";
 import { getRuleDescription } from "../../src/rule-descriptions";
@@ -87,7 +86,8 @@ describe("eslint plugin", () => {
   });
 
   it("fails explicitly for unknown rule descriptions", () => {
-    expect(() => getRuleDescription("unknown-rule" as never)).toThrow("Unknown rule code.");
+    // @ts-expect-error exercising the runtime guard for invalid external input
+    expect(() => getRuleDescription("unknown-rule")).toThrow("Unknown rule code.");
   });
 
   it("ignores non-object rule options", () => {
@@ -95,13 +95,7 @@ describe("eslint plugin", () => {
   });
 
   it("skips virtual files before running checker analysis", () => {
-    expect(
-      getDiagnostics({
-        filename: "<input>",
-        options: [],
-        sourceCode: { text: 'import styles from "./missing.module.css"; styles.root;' }
-      } as never)
-    ).toEqual([]);
+    expect(runRuleForSource("missing-css-module-class", "<input>", "styles.root;")).toEqual([]);
   });
 
   it("documents rule options in the JSON schema", () => {
@@ -253,6 +247,39 @@ function runRuleReports(
 
   visitor?.Program?.({ type: "Program" });
   return reports;
+}
+
+function runRuleForSource(
+  code: (typeof ruleCodes)[number],
+  filePath: string,
+  source: string,
+  options?: unknown
+): string[] {
+  const rule = rules[code];
+
+  if (!isRuleModule(rule)) {
+    throw new Error(`Rule ${code} does not expose a create API.`);
+  }
+
+  const reports: RuleReport[] = [];
+  const context: RuleContext = {
+    filename: filePath,
+    options: options === undefined ? [] : [options],
+    sourceCode: {
+      text: source
+    },
+    report(descriptor) {
+      reports.push(descriptor);
+    }
+  };
+  const visitor = (rule.createOnce ?? rule.create)?.(context);
+
+  if (visitor?.before?.() === false) {
+    return reports.map((report) => report.message);
+  }
+
+  visitor?.Program?.({ type: "Program" });
+  return reports.map((report) => report.message);
 }
 
 function runRuleBefore(
