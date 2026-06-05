@@ -36,7 +36,7 @@ console.log(result.errors);
 
 ### `checkCssModules(options)`
 
-Checks a target directory and returns a `Promise<CheckResult>`.
+Checks a target directory or source file and returns a `Promise<CheckResult>`.
 
 ```ts
 type CheckOptions = {
@@ -58,7 +58,7 @@ type CheckOptions = {
 
 ### `target`
 
-Directory to check. Defaults to the current working directory.
+Directory or source file to check. Defaults to the current working directory.
 
 ### `ignore`
 

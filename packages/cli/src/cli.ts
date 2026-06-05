@@ -77,7 +77,7 @@ function createProgram(): Command {
   return new Command()
     .name("stale-styles")
     .description("Checks CSS Modules class usages in JavaScript and TypeScript projects.")
-    .argument("[target]", "target directory", ".")
+    .argument("[target]", "target directory or source file", ".")
     .option("--ignore <pattern...>", "ignore files or directories")
     .option("--ignore-class <name...>", "ignore specific class names")
     .option(

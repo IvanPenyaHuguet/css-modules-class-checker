@@ -29,13 +29,14 @@ npx stale-styles src
 stale-styles [target]
 ```
 
-`target` is optional. When omitted, the current directory is checked.
+`target` can be a directory or a source file. When omitted, the current directory is checked.
 
 Examples:
 
 ```bash
 stale-styles
 stale-styles src
+stale-styles src/Button.tsx
 stale-styles packages/css-modules-app/src
 ```
 

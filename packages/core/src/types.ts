@@ -68,7 +68,7 @@ export type CssModuleFileMatcher = string | RegExp;
 
 /** Options accepted by {@link checkCssModules}. */
 export type CheckOptions = {
-  /** Directory to check. Defaults to the current working directory. */
+  /** Directory or source file to check. Defaults to the current working directory. */
   target?: string;
   /** File or directory patterns to skip while walking source files. */
   ignore?: string[];

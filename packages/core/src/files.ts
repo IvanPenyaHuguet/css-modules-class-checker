@@ -1,4 +1,4 @@
-import { readdir } from "node:fs/promises";
+import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { defaultIgnores } from "./config";
 
@@ -8,6 +8,20 @@ export async function findSourceFiles(target: string, ignore: string[] = []): Pr
   const root = path.resolve(target);
   const ignoreMatchers = [...defaultIgnores, ...ignore].map(createIgnoreMatcher);
   const files: string[] = [];
+  const targetStats = await stat(root);
+
+  if (targetStats.isFile()) {
+    const basename = path.basename(root);
+
+    if (
+      sourceExtensions.has(path.extname(basename)) &&
+      !ignoreMatchers.some((matcher) => matcher(basename, basename))
+    ) {
+      return [root];
+    }
+
+    return [];
+  }
 
   async function walk(directory: string): Promise<void> {
     const entries = await readdir(directory, { withFileTypes: true });

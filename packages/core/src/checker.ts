@@ -34,7 +34,7 @@ type SourceAnalysisOptions = Pick<
 >;
 
 /**
- * Check CSS Module imports and class usages under a target directory.
+ * Check CSS Module imports and class usages under a target directory or source file.
  *
  * The checker validates missing classes, unused CSS Module classes, raw class
  * strings that duplicate imported module classes, empty selectors, parse
