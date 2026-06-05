@@ -1,0 +1,19 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "unresolved-dynamic-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "button.module.css",
+      "line": 6
+    },
+    {
+      "code": "unresolved-dynamic-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "button.module.css",
+      "line": 7
+    }
+  ]
+}

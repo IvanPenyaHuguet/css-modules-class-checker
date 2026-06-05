@@ -1,0 +1,34 @@
+{
+  "name": "@stale-styles/core",
+  "version": "1.0.0-beta.1",
+  "private": true,
+  "description": "Core CSS Modules class analysis for JavaScript and TypeScript projects.",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup --config ./tsup.config.ts",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "test": "vitest run --root ../.. packages/core/tests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lightningcss": "catalog:default",
+    "oxc-parser": "catalog:default",
+    "oxc-resolver": "catalog:default"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

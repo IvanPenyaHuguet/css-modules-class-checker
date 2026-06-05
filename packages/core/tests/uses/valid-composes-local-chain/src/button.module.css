@@ -1,0 +1,13 @@
+.reset {
+  appearance: none;
+}
+
+.base {
+  composes: reset;
+  color: red;
+}
+
+.button {
+  composes: base;
+  color: blue;
+}

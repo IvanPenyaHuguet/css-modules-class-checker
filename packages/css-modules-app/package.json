@@ -1,0 +1,37 @@
+{
+  "name": "@stale-styles/css-modules",
+  "version": "1.0.0-beta.1",
+  "description": "Importable CSS Modules class checker application API.",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup --config ./tsup.config.ts",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "test": "vitest run --root ../.. packages/css-modules-app/tests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lightningcss": "catalog:default",
+    "oxc-parser": "catalog:default",
+    "oxc-resolver": "catalog:default"
+  },
+  "devDependencies": {
+    "@stale-styles/core": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

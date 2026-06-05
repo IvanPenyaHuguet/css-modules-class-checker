@@ -1,0 +1,13 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "css-module-file-not-found",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "missing.module.css",
+      "line": 1,
+      "column": 1
+    }
+  ]
+}

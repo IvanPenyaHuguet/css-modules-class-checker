@@ -1,0 +1,19 @@
+.primary {
+  color: red;
+}
+
+.active {
+  color: blue;
+}
+
+.nested {
+  color: purple;
+}
+
+.is-selected {
+  color: green;
+}
+
+.safe {
+  color: black;
+}

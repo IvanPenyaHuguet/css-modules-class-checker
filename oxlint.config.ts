@@ -10,7 +10,18 @@ export default defineConfig({
     node: true,
     vitest: true
   },
-  ignorePatterns: ["dist", "node_modules", "tests/uses/**/src/**"],
+  ignorePatterns: [
+    "dist",
+    "node_modules",
+    "packages/core/tests/uses/**/src/**",
+    "tests/uses/**/src/**",
+    "packages/eslint-plugin/tests/fixtures/oxlint-plugin/mixed-errors/**",
+    "packages/eslint-plugin/tests/fixtures/oxlint-plugin/rules-off/**",
+    "tests/fixtures/oxlint-plugin/mixed-errors/**",
+    "tests/fixtures/oxlint-plugin/rules-off/**",
+    "**/tests/fixtures/oxlint-plugin/mixed-errors/**",
+    "**/tests/fixtures/oxlint-plugin/rules-off/**"
+  ],
   options: {
     typeAware: true
   },

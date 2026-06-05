@@ -1,0 +1,18 @@
+.card {
+  display: grid;
+}
+
+.avatar {
+  border-radius: 999px;
+}
+
+.badge {
+  font-weight: 700;
+}
+
+.placeholder {
+}
+
+.unused {
+  color: crimson;
+}

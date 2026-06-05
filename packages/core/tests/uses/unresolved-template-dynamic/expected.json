@@ -1,0 +1,25 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "unresolved-dynamic-class",
+      "severity": "error",
+      "filePath": "grid.tsx",
+      "cssModulePath": "grid.module.css"
+    },
+    {
+      "code": "unused-css-module-class",
+      "severity": "error",
+      "filePath": "grid.module.css",
+      "cssModulePath": "grid.module.css",
+      "className": "gridOne"
+    },
+    {
+      "code": "unused-css-module-class",
+      "severity": "error",
+      "filePath": "grid.module.css",
+      "cssModulePath": "grid.module.css",
+      "className": "gridTwo"
+    }
+  ]
+}

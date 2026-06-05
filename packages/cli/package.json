@@ -1,0 +1,30 @@
+{
+  "name": "@stale-styles/cli",
+  "version": "1.0.0-beta.1",
+  "description": "Executable CLI for @stale-styles/css-modules.",
+  "license": "MIT",
+  "bin": {
+    "stale-styles": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsup --config ./tsup.config.ts",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "test": "vitest run --root ../.. packages/cli/tests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@stale-styles/css-modules": "workspace:*",
+    "commander": "^15.0.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "status": "FAIL",
+  "errors": [
+    {
+      "code": "missing-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "button.module.css",
+      "className": "primaryButton"
+    },
+    {
+      "code": "missing-css-module-class",
+      "severity": "error",
+      "filePath": "button.tsx",
+      "cssModulePath": "button.module.css",
+      "className": "isActive"
+    },
+    {
+      "code": "unused-css-module-class",
+      "severity": "error",
+      "filePath": "button.module.css",
+      "cssModulePath": "button.module.css",
+      "className": "is-active"
+    },
+    {
+      "code": "unused-css-module-class",
+      "severity": "error",
+      "filePath": "button.module.css",
+      "cssModulePath": "button.module.css",
+      "className": "primary_button"
+    }
+  ]
+}

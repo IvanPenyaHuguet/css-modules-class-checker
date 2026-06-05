@@ -1,0 +1,54 @@
+{
+  "name": "@stale-styles/eslint-plugin",
+  "version": "1.0.0-beta.1",
+  "description": "ESLint and Oxlint plugin for CSS Modules class checking.",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./css-modules": {
+      "types": "./dist/css-modules.d.ts",
+      "import": "./dist/css-modules.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup --config ./tsup.config.ts",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint -c ../../oxlint.config.ts src tests/unit tests/fixtures/oxlint-plugin/src",
+    "lint:fix": "oxlint --fix .",
+    "test": "pnpm run build && vitest run --root ../.. packages/eslint-plugin/tests && oxlint -c tests/fixtures/oxlint-plugin/oxlint.config.ts tests/fixtures/oxlint-plugin/src && oxlint -c tests/fixtures/oxlint-plugin/oxlint.rules-off.config.ts tests/fixtures/oxlint-plugin/rules-off",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "^1.67.0",
+    "lightningcss": "catalog:default",
+    "oxc-parser": "catalog:default",
+    "oxc-resolver": "catalog:default"
+  },
+  "devDependencies": {
+    "@stale-styles/core": "workspace:*",
+    "eslint": "10.4.1"
+  },
+  "peerDependencies": {
+    "eslint": ">=8 || >=9",
+    "oxlint": ">=1.67.0"
+  },
+  "peerDependenciesMeta": {
+    "eslint": {
+      "optional": true
+    },
+    "oxlint": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "status": "SUCCESS",
+  "errors": [
+    {
+      "code": "css-parse-error",
+      "severity": "warning",
+      "filePath": "button.module.css",
+      "cssModulePath": "button.module.css",
+      "line": 4,
+      "column": 1
+    }
+  ]
+}
