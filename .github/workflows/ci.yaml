@@ -25,7 +25,6 @@ jobs:
     name: Quality checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: pr-approval
 
     steps:
       - name: Checkout
