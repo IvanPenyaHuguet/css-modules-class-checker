@@ -21,11 +21,12 @@
     "release": "commit-and-tag-version",
     "release:beta": "commit-and-tag-version --prerelease beta",
     "release:dry-run": "commit-and-tag-version --dry-run",
-    "test": "pnpm -r test",
+    "test": "vitest run --coverage",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
     "@types/node": "24.12.4",
+    "@vitest/coverage-v8": "4.1.7",
     "commit-and-tag-version": "12.7.3",
     "oxfmt": "0.52.0",
     "oxlint": "1.67.0",

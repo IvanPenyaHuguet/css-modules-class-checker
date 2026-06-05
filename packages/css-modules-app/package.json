@@ -20,7 +20,7 @@
     "format:check": "oxfmt --check .",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "test": "vitest run --root ../.. packages/css-modules-app/tests",
+    "test": "vitest run --root ../.. --project css-modules-app",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
