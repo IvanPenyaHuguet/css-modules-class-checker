@@ -1,6 +1,7 @@
 {
   "name": "@stale-styles/core",
   "version": "1.0.0-beta.1",
+  "private": true,
   "description": "Core CSS Modules class analysis for JavaScript and TypeScript projects.",
   "license": "MIT",
   "files": [
