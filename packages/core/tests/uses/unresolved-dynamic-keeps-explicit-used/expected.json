@@ -3,7 +3,7 @@
   "errors": [
     {
       "code": "unresolved-dynamic-class",
-      "severity": "warning",
+      "severity": "error",
       "filePath": "button.tsx",
       "cssModulePath": "button.module.css"
     },
@@ -12,7 +12,14 @@
       "severity": "error",
       "filePath": "button.module.css",
       "cssModulePath": "button.module.css",
-      "className": "primary"
+      "className": "orphan"
+    },
+    {
+      "code": "unused-css-module-class",
+      "severity": "error",
+      "filePath": "button.module.css",
+      "cssModulePath": "button.module.css",
+      "className": "secondary"
     }
   ]
 }

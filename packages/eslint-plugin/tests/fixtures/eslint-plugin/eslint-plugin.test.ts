@@ -69,6 +69,19 @@ describe("eslint plugin fixture", () => {
       })
     ]);
   });
+
+  it("reports unused classes when only unresolved dynamic access is disabled inline", async () => {
+    const messages = await runEslint(["src/disabled-unresolved-keeps-unused.tsx"]);
+
+    expect(messages).toEqual([
+      expect.objectContaining({
+        ruleId: "@stale-styles/unused-css-module-class",
+        message: expect.stringContaining(
+          'Class "orphan" is defined in disabled-unresolved-keeps-unused.module.css but is never used.'
+        )
+      })
+    ]);
+  });
 });
 
 async function runEslint(files: string[]) {

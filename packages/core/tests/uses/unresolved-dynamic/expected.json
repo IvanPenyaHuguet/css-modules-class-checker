@@ -6,6 +6,13 @@
       "severity": "error",
       "filePath": "button.tsx",
       "cssModulePath": "button.module.css"
+    },
+    {
+      "code": "unused-css-module-class",
+      "severity": "error",
+      "filePath": "button.module.css",
+      "cssModulePath": "button.module.css",
+      "className": "primary"
     }
   ]
 }

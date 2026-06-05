@@ -26,7 +26,6 @@ type CssModuleRecord = {
   emptyClasses: Set<string>;
   locations: Map<string, SourceLocation>;
   usedClasses: Set<string>;
-  hasUnresolvedUsage: boolean;
 };
 
 type SourceAnalysisOptions = Pick<
@@ -161,8 +160,7 @@ async function analyzeSourceFile(
         composedClasses: extracted.composedClasses,
         emptyClasses: extracted.emptyClasses,
         locations: extracted.locations,
-        usedClasses: new Set(),
-        hasUnresolvedUsage: false
+        usedClasses: new Set()
       });
     }
 
@@ -254,8 +252,7 @@ function analyzeSourceFileSync(
         composedClasses: extracted.composedClasses,
         emptyClasses: extracted.emptyClasses,
         locations: extracted.locations,
-        usedClasses: new Set(),
-        hasUnresolvedUsage: false
+        usedClasses: new Set()
       });
     }
 
@@ -304,7 +301,6 @@ function analyzeUsages(
         continue;
       }
 
-      cssModule.hasUnresolvedUsage = true;
       pushDiagnostic(diagnostics, rules, {
         code: "unresolved-dynamic-class",
         message: `Cannot statically resolve dynamic class access on ${usage.localName}.`,
@@ -425,10 +421,6 @@ function pushCssModuleDiagnostics(
         className,
         location: cssModule.locations.get(className) ?? { index: 0, line: 1, column: 1 }
       });
-    }
-
-    if (cssModule.hasUnresolvedUsage) {
-      continue;
     }
 
     for (const className of cssModule.classes) {

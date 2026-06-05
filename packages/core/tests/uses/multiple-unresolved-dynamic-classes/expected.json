@@ -3,16 +3,17 @@
   "errors": [
     {
       "code": "unresolved-dynamic-class",
-      "severity": "warning",
+      "severity": "error",
       "filePath": "button.tsx",
-      "cssModulePath": "button.module.css"
+      "cssModulePath": "button.module.css",
+      "line": 6
     },
     {
-      "code": "unused-css-module-class",
+      "code": "unresolved-dynamic-class",
       "severity": "error",
-      "filePath": "button.module.css",
+      "filePath": "button.tsx",
       "cssModulePath": "button.module.css",
-      "className": "primary"
+      "line": 7
     }
   ]
 }

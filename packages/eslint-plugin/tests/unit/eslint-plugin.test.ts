@@ -123,6 +123,28 @@ describe("eslint plugin", () => {
     ]);
   });
 
+  it("reports unused classes even when unresolved dynamic diagnostics are not requested", () => {
+    const reports = runRule("unused-css-module-class", "unresolved-dynamic-keeps-explicit-used");
+
+    expect(reports).toEqual([
+      expect.stringContaining('Class "orphan" is defined in button.module.css but is never used.'),
+      expect.stringContaining(
+        'Class "secondary" is defined in button.module.css but is never used.'
+      )
+    ]);
+  });
+
+  it("reports every unresolved dynamic class access in one source file", () => {
+    const reports = runRule("unresolved-dynamic-class", "multiple-unresolved-dynamic-classes");
+
+    expect(reports).toEqual([
+      expect.stringContaining("Cannot statically resolve dynamic class access on styles."),
+      expect.stringContaining("Cannot statically resolve dynamic class access on styles.")
+    ]);
+    expect(reports[0]).toContain("at 6:");
+    expect(reports[1]).toContain("at 7:");
+  });
+
   it("passes rule options through to the checker", () => {
     const withoutOptions = runRule("missing-css-module-class", "valid-camelcase-transform");
     const withOptions = runRule(
