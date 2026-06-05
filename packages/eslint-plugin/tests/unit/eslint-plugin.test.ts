@@ -132,6 +132,14 @@ describe("eslint plugin", () => {
     expect(withOptions).toEqual([]);
   });
 
+  it("reports invalid ignoreClassPatterns options instead of throwing", () => {
+    const reports = runRule("missing-css-module-class", "missing-dot-notation", undefined, {
+      ignoreClassPatterns: ["["]
+    });
+
+    expect(reports).toEqual([expect.stringContaining('Invalid ignoreClassPatterns pattern "["')]);
+  });
+
   it("skips files without matching CSS Module imports in the before hook", () => {
     expect(runRuleBefore("missing-css-module-class", "raw-class-without-module-import")).toBe(
       false

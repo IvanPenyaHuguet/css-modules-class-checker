@@ -16,4 +16,15 @@ describe("ignoreClasses", () => {
     expect(result.status).toBe("SUCCESS");
     expect(result.errors).toEqual([]);
   });
+
+  it("handles global regular expressions deterministically", async () => {
+    const target = path.resolve(testRoot, "../uses/ignore-class-regexp/src");
+    const result = await checkCssModules({
+      target,
+      ignoreClasses: [/^external-/g]
+    });
+
+    expect(result.status).toBe("SUCCESS");
+    expect(result.errors).toEqual([]);
+  });
 });

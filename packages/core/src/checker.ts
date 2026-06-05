@@ -499,6 +499,10 @@ function isIgnoredClass(className: string, ignoreClasses: CheckOptions["ignoreCl
       return ignoredClass === className;
     }
 
-    return ignoredClass.test(className);
+    ignoredClass.lastIndex = 0;
+    const matches = ignoredClass.test(className);
+    ignoredClass.lastIndex = 0;
+
+    return matches;
   });
 }

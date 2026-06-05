@@ -1,6 +1,10 @@
 import type { CheckSourceFileOptions } from "@stale-styles/core";
 import type { PluginRuleOptions } from "./types";
 
+export type OptionValidationError = {
+  message: string;
+};
+
 export function normalizeOptions(
   value: unknown
 ): Omit<CheckSourceFileOptions, "filePath" | "source" | "rules"> {
@@ -10,7 +14,7 @@ export function normalizeOptions(
 
   const ignoreClasses = [
     ...getStringArray(value.ignoreClasses),
-    ...getStringArray(value.ignoreClassPatterns).map((pattern) => new RegExp(pattern))
+    ...compileIgnoreClassPatterns(value.ignoreClassPatterns).patterns
   ];
   const localsConvention = isLocalsConvention(value.localsConvention)
     ? value.localsConvention
@@ -22,6 +26,40 @@ export function normalizeOptions(
     ...(localsConvention ? { localsConvention } : {}),
     ...(matchFiles.length > 0 ? { matchFiles } : {})
   };
+}
+
+export function validateOptions(value: unknown): OptionValidationError[] {
+  if (!isPlainObject(value)) {
+    return [];
+  }
+
+  return compileIgnoreClassPatterns(value.ignoreClassPatterns).errors;
+}
+
+function compileIgnoreClassPatterns(value: unknown): {
+  patterns: RegExp[];
+  errors: OptionValidationError[];
+} {
+  const patterns: RegExp[] = [];
+  const errors: OptionValidationError[] = [];
+
+  for (const pattern of getStringArray(value)) {
+    try {
+      patterns.push(new RegExp(pattern));
+    } catch (error) {
+      errors.push({
+        message: `Invalid ignoreClassPatterns pattern ${JSON.stringify(
+          pattern
+        )}: ${getErrorMessage(error)}.`
+      });
+    }
+  }
+
+  return { patterns, errors };
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function getStringArray(value: unknown): string[] {

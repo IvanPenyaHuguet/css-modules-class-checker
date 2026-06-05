@@ -7,6 +7,7 @@ import {
   getReportLocation,
   isVirtualFile
 } from "./diagnostics";
+import { validateOptions } from "./options";
 import { getRuleDescription } from "./rule-descriptions";
 import type { PluginDiagnosticCode } from "./types";
 
@@ -66,6 +67,19 @@ export function createRule(code: PluginDiagnosticCode): Rule {
           return shouldCheckFile(context);
         },
         Program(node) {
+          const optionErrors = validateOptions(context.options?.[0]);
+
+          for (const error of optionErrors) {
+            context.report({
+              message: error.message,
+              node
+            });
+          }
+
+          if (optionErrors.length > 0) {
+            return;
+          }
+
           for (const diagnostic of getDiagnostics(context)) {
             if (diagnostic.code !== code) {
               continue;
