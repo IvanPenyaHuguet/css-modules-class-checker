@@ -96,6 +96,10 @@ describe("CSS class extraction", () => {
         color: red;
       }
 
+      .one :global(.two) {
+        color: orange;
+      }
+
       :global(.reset) .button {
         color: blue;
       }
@@ -113,7 +117,7 @@ describe("CSS class extraction", () => {
       throw new Error(result.message);
     }
 
-    expect([...result.classes].sort()).toEqual(["alone", "button"]);
+    expect([...result.classes].sort()).toEqual(["alone", "button", "one"]);
   });
 
   it("ignores class-like text inside comments", () => {

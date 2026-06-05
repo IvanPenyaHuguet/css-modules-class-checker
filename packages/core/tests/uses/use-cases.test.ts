@@ -14,6 +14,8 @@ type ExpectedResult = {
     filePath: string;
     cssModulePath?: string;
     className?: string;
+    line?: number;
+    column?: number;
   }>;
 };
 
@@ -33,7 +35,7 @@ describe("use cases", async () => {
     const options = await readOptions(caseRoot);
     const result = await checkCssModules({ ...options, target });
 
-    expect(normalizeResult(result, target)).toEqual(expected);
+    expect(normalizeResult(result, target, expected)).toEqual(expected);
   });
 });
 
@@ -45,16 +47,26 @@ async function readOptions(caseRoot: string): Promise<Omit<CheckOptions, "target
   }
 }
 
-function normalizeResult(result: CheckResult, target: string): ExpectedResult {
+function normalizeResult(
+  result: CheckResult,
+  target: string,
+  expected: ExpectedResult
+): ExpectedResult {
   return {
     status: result.status,
-    errors: result.errors.map((error) => ({
-      code: error.code,
-      severity: error.severity,
-      filePath: toRelative(target, error.filePath),
-      ...(error.cssModulePath ? { cssModulePath: toRelative(target, error.cssModulePath) } : {}),
-      ...(error.className ? { className: error.className } : {})
-    }))
+    errors: result.errors.map((error, index) => {
+      const expectedError = expected.errors[index];
+
+      return {
+        code: error.code,
+        severity: error.severity,
+        filePath: toRelative(target, error.filePath),
+        ...(error.cssModulePath ? { cssModulePath: toRelative(target, error.cssModulePath) } : {}),
+        ...(error.className ? { className: error.className } : {}),
+        ...(expectedError?.line !== undefined ? { line: error.line } : {}),
+        ...(expectedError?.column !== undefined ? { column: error.column } : {})
+      };
+    })
   };
 }
 
@@ -94,12 +106,18 @@ function isExpectedError(value: unknown): value is ExpectedResult["errors"][numb
     typeof value.severity === "string" &&
     typeof value.filePath === "string" &&
     optionalString(value.cssModulePath) &&
-    optionalString(value.className)
+    optionalString(value.className) &&
+    optionalNumber(value.line) &&
+    optionalNumber(value.column)
   );
 }
 
 function optionalString(value: unknown): boolean {
   return value === undefined || typeof value === "string";
+}
+
+function optionalNumber(value: unknown): boolean {
+  return value === undefined || typeof value === "number";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

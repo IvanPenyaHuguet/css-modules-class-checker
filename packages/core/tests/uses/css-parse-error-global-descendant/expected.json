@@ -1,13 +1,13 @@
 {
-  "status": "SUCCESS",
+  "status": "FAIL",
   "errors": [
     {
       "code": "css-parse-error",
-      "severity": "warning",
+      "severity": "error",
       "filePath": "button.module.css",
       "cssModulePath": "button.module.css",
-      "line": 4,
-      "column": 1
+      "line": 1,
+      "column": 7
     }
   ]
 }

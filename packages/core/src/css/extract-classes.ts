@@ -126,10 +126,7 @@ function getEmptyStandaloneClasses(source: string, filename: string): Set<string
   return classes;
 }
 
-function collectStandaloneClasses(
-  selectorList: Selector[],
-  classes: Set<string>
-): void {
+function collectStandaloneClasses(selectorList: Selector[], classes: Set<string>): void {
   for (const selector of selectorList) {
     let compoundClassCount = 0;
     let exportedCompoundClass: string | undefined;

@@ -106,11 +106,11 @@ describe("eslint plugin", () => {
   });
 
   it("reports every matching diagnostic for a rule in one source file", () => {
-    const reports = runRule("missing-css-module-class", "missing-compound-nested-css-class");
+    const reports = runRule("missing-css-module-class", "locals-default-no-transform");
 
     expect(reports).toEqual([
-      expect.stringContaining('Class "one" is not defined in button.module.css.'),
-      expect.stringContaining('Class "two" is not defined in button.module.css.')
+      expect.stringContaining('Class "primaryButton" is not defined in button.module.css.'),
+      expect.stringContaining('Class "isActive" is not defined in button.module.css.')
     ]);
   });
 

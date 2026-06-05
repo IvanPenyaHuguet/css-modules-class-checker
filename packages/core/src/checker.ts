@@ -147,9 +147,9 @@ async function analyzeSourceFile(
         pushDiagnostic(diagnostics, rules, {
           code: "css-parse-error",
           message: extracted.message,
-          filePath,
+          filePath: cssImport.cssModulePath,
           cssModulePath: cssImport.cssModulePath,
-          location: { index: cssImport.index, line: extracted.line, column: extracted.column }
+          location: { index: 0, line: extracted.line, column: extracted.column }
         });
         continue;
       }
@@ -240,9 +240,9 @@ function analyzeSourceFileSync(
         pushDiagnostic(diagnostics, rules, {
           code: "css-parse-error",
           message: extracted.message,
-          filePath,
+          filePath: cssImport.cssModulePath,
           cssModulePath: cssImport.cssModulePath,
-          location: { index: cssImport.index, line: extracted.line, column: extracted.column }
+          location: { index: 0, line: extracted.line, column: extracted.column }
         });
         continue;
       }
