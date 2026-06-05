@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "lightningcss": "catalog:default",
-    "oxc-parser": "catalog:default"
+    "oxc-parser": "catalog:default",
+    "oxc-resolver": "catalog:default"
   },
   "engines": {
     "node": ">=22.12.0"

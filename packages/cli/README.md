@@ -20,13 +20,13 @@ Install locally:
 
 ```bash
 npm install --save-dev @stale-styles/cli
-npx @stale-styles/cli src
+npx stale-styles src
 ```
 
 ## Usage
 
 ```bash
-@stale-styles/cli [target]
+stale-styles [target]
 ```
 
 `target` is optional. When omitted, the current directory is checked.
@@ -34,9 +34,9 @@ npx @stale-styles/cli src
 Examples:
 
 ```bash
-@stale-styles/cli
-@stale-styles/cli src
-@stale-styles/cli packages/css-modules-app/src
+stale-styles
+stale-styles src
+stale-styles packages/css-modules-app/src
 ```
 
 ## Options
@@ -67,11 +67,11 @@ dashesOnly
 Examples:
 
 ```bash
-@stale-styles/cli src --ignore generated
-@stale-styles/cli src --ignore-class legacy-global external
-@stale-styles/cli src --locals-convention camelCase
-@stale-styles/cli src --rule unresolved-dynamic-class=warning
-@stale-styles/cli src --rule empty-css-module-selector=off
+stale-styles src --ignore generated
+stale-styles src --ignore-class legacy-global external
+stale-styles src --locals-convention camelCase
+stale-styles src --rule unresolved-dynamic-class=warning
+stale-styles src --rule empty-css-module-selector=off
 ```
 
 ## Rules

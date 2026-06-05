@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "lightningcss": "catalog:default",
-    "oxc-parser": "catalog:default"
+    "oxc-parser": "catalog:default",
+    "oxc-resolver": "catalog:default"
   },
   "devDependencies": {
     "@stale-styles/core": "workspace:*"

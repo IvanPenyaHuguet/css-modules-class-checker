@@ -35,7 +35,7 @@ Or add it to a project:
 
 ```bash
 npm install --save-dev @stale-styles/cli
-npx @stale-styles/cli src
+npx stale-styles src
 ```
 
 For lint integration:

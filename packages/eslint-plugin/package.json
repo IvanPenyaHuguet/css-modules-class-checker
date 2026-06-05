@@ -29,7 +29,8 @@
   "dependencies": {
     "@oxlint/plugins": "^1.67.0",
     "lightningcss": "catalog:default",
-    "oxc-parser": "catalog:default"
+    "oxc-parser": "catalog:default",
+    "oxc-resolver": "catalog:default"
   },
   "devDependencies": {
     "@stale-styles/core": "workspace:*",

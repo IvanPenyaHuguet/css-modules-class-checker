@@ -1,8 +1,14 @@
 import path from "node:path";
+import { ResolverFactory } from "oxc-resolver";
 import { matchesCssModuleFile } from "../config";
 import type { CssModuleFileMatcher, CssModuleImport } from "../types";
 import type { AstNode } from "./ast";
 import { getIdentifierName, getStringLiteralValue, isAstNode } from "./ast";
+
+const resolver = new ResolverFactory({
+  conditionNames: ["node", "import"],
+  tsconfig: "auto"
+});
 
 export function findCssModuleImports(
   program: AstNode,
@@ -18,7 +24,7 @@ export function findCssModuleImports(
     }
 
     const importPath = getStringLiteralValue(statement.source);
-    const cssModulePath = importPath ? path.resolve(path.dirname(filePath), importPath) : undefined;
+    const cssModulePath = importPath ? resolveCssModulePath(filePath, importPath) : undefined;
 
     if (
       !importPath ||
@@ -65,6 +71,17 @@ export function findCssModuleImports(
   }
 
   return imports;
+}
+
+function resolveCssModulePath(filePath: string, importPath: string): string {
+  return (
+    resolver.resolveFileSync(filePath, importPath).path ??
+    resolveUnresolvedPath(filePath, importPath)
+  );
+}
+
+function resolveUnresolvedPath(filePath: string, importPath: string): string {
+  return path.resolve(path.dirname(filePath), importPath);
 }
 
 function isImportDeclaration(node: unknown): node is AstNode & {
