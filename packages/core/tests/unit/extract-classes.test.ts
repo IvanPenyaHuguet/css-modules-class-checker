@@ -35,10 +35,10 @@ describe("CSS class extraction", () => {
       throw new Error(result.message);
     }
 
-    expect([...result.classes].sort()).toEqual(["button", "icon", "label"]);
+    expect([...result.classes].sort()).toEqual(["active", "button", "icon", "label", "wide"]);
   });
 
-  it("does not extract classes that only exist in compound nested selectors", () => {
+  it("extracts CSS Module exports from compound nested selectors", () => {
     const source = `
       .one {
         &.two {
@@ -55,7 +55,7 @@ describe("CSS class extraction", () => {
       throw new Error(result.message);
     }
 
-    expect([...result.classes].sort()).toEqual([]);
+    expect([...result.classes].sort()).toEqual(["one", "two"]);
   });
 
   it("extracts standalone classes through media queries and pseudo selectors", () => {
@@ -87,7 +87,7 @@ describe("CSS class extraction", () => {
       throw new Error(result.message);
     }
 
-    expect([...result.classes].sort()).toEqual(["card", "responsive"]);
+    expect([...result.classes].sort()).toEqual(["card", "disabled", "icon", "responsive"]);
   });
 
   it("keeps global classes out of CSS Module standalone class extraction", () => {
@@ -137,7 +137,7 @@ describe("CSS class extraction", () => {
       throw new Error(result.message);
     }
 
-    expect([...result.classes].sort()).toEqual(["button"]);
+    expect([...result.classes].sort()).toEqual(["active", "button"]);
   });
 
   it("keeps standalone empty selectors as classes and marks them as empty", () => {

@@ -28,9 +28,7 @@ export function extractCssClasses(
       include: Features.Nesting
     });
     const exports = transformed.exports ?? {};
-    const exportedClasses = new Set(Object.keys(exports));
-    const classes = getStandaloneClasses(transformed.code, filename, exportedClasses);
-    addSameSelectorCompoundClasses(source, filename, exportedClasses, classes);
+    const classes = new Set(Object.keys(exports).sort());
     const emptyClasses = getEmptyStandaloneClasses(source, filename);
     const locations = getClassLocations(source);
 
@@ -119,87 +117,17 @@ function getEmptyStandaloneClasses(source: string, filename: string): Set<string
             return;
           }
 
-          collectStandaloneClasses(rule.value.selectors, undefined, classes);
+          collectStandaloneClasses(rule.value.selectors, classes);
         }
       }
     }
   });
 
   return classes;
-}
-
-function getStandaloneClasses(
-  code: Uint8Array,
-  filename: string,
-  exportedClasses: Set<string>
-): Set<string> {
-  const classes = new Set<string>();
-
-  transform({
-    filename,
-    code,
-    visitor: {
-      Rule: {
-        style(rule) {
-          collectStandaloneClasses(rule.value.selectors, exportedClasses, classes);
-        }
-      }
-    }
-  });
-
-  return classes;
-}
-
-function addSameSelectorCompoundClasses(
-  source: string,
-  filename: string,
-  exportedClasses: Set<string>,
-  classes: Set<string>
-): void {
-  transform({
-    filename,
-    code: Buffer.from(source),
-    include: Features.Nesting,
-    visitor: {
-      Rule: {
-        style(rule) {
-          collectSameSelectorCompoundClasses(rule.value.selectors, exportedClasses, classes);
-        }
-      }
-    }
-  });
-}
-
-function collectSameSelectorCompoundClasses(
-  selectorList: Selector[],
-  exportedClasses: Set<string>,
-  classes: Set<string>
-): void {
-  for (const selector of selectorList) {
-    const selectorClasses: string[] = [];
-
-    for (const component of selector) {
-      if (component.type === "combinator" || component.type === "nesting") {
-        selectorClasses.length = 0;
-        break;
-      }
-
-      if (component.type === "class" && exportedClasses.has(component.name)) {
-        selectorClasses.push(component.name);
-      }
-    }
-
-    if (selectorClasses.length > 1 && selectorClasses.some((className) => classes.has(className))) {
-      for (const className of selectorClasses) {
-        classes.add(className);
-      }
-    }
-  }
 }
 
 function collectStandaloneClasses(
   selectorList: Selector[],
-  exportedClasses: Set<string> | undefined,
   classes: Set<string>
 ): void {
   for (const selector of selectorList) {
@@ -216,10 +144,7 @@ function collectStandaloneClasses(
 
       if (component.type === "class") {
         compoundClassCount += 1;
-
-        if (!exportedClasses || exportedClasses.has(component.name)) {
-          exportedCompoundClass = component.name;
-        }
+        exportedCompoundClass = component.name;
       }
     }
 

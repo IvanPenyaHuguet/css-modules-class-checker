@@ -2,11 +2,11 @@
   "status": "FAIL",
   "errors": [
     {
-      "code": "missing-css-module-class",
+      "code": "unused-css-module-class",
       "severity": "error",
-      "filePath": "button.tsx",
+      "filePath": "button.module.css",
       "cssModulePath": "button.module.css",
-      "className": "two"
+      "className": "one"
     }
   ]
 }

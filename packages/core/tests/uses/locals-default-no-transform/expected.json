@@ -20,14 +20,14 @@
       "severity": "error",
       "filePath": "button.module.css",
       "cssModulePath": "button.module.css",
-      "className": "primary_button"
+      "className": "is-active"
     },
     {
       "code": "unused-css-module-class",
       "severity": "error",
       "filePath": "button.module.css",
       "cssModulePath": "button.module.css",
-      "className": "is-active"
+      "className": "primary_button"
     }
   ]
 }
