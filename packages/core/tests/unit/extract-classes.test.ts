@@ -171,6 +171,26 @@ describe("CSS class extraction", () => {
     expect([...result.emptyClasses].sort()).toEqual(["marker"]);
   });
 
+  it("marks each standalone compound in an empty descendant selector", () => {
+    const result = extractCssClasses(`
+      .parent .child {
+        /* EMPTY */
+      }
+
+      .compound.one {
+        /* EMPTY */
+      }
+    `);
+
+    expect(result.ok).toBe(true);
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    expect([...result.emptyClasses].sort()).toEqual(["child", "parent"]);
+  });
+
   it("does not transform importable class names by default", () => {
     const result = extractCssClasses(`
       .primary_button {

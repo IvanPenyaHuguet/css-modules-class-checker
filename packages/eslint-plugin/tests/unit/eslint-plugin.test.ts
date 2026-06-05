@@ -4,7 +4,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { Linter } from "eslint";
 import type { Plugin, Rule } from "@oxlint/plugins";
+import { getDiagnostics } from "../../src/diagnostics";
 import { configs, rules } from "../../src/index";
+import { normalizeOptions } from "../../src/options";
+import { getRuleDescription } from "../../src/rule-descriptions";
 
 type RuleModule = {
   createOnce?: (context: RuleContext) => RuleVisitor;
@@ -81,6 +84,24 @@ const reportCases: RuleCase[] = [
 describe("eslint plugin", () => {
   it("exports every checker diagnostic as a rule", () => {
     expect(Object.keys(rules).sort()).toEqual([...ruleCodes].sort());
+  });
+
+  it("fails explicitly for unknown rule descriptions", () => {
+    expect(() => getRuleDescription("unknown-rule" as never)).toThrow("Unknown rule code.");
+  });
+
+  it("ignores non-object rule options", () => {
+    expect(normalizeOptions("invalid")).toEqual({});
+  });
+
+  it("skips virtual files before running checker analysis", () => {
+    expect(
+      getDiagnostics({
+        filename: "<input>",
+        options: [],
+        sourceCode: { text: 'import styles from "./missing.module.css"; styles.root;' }
+      } as never)
+    ).toEqual([]);
   });
 
   it("documents rule options in the JSON schema", () => {
