@@ -286,7 +286,7 @@ function bindingContainsName(binding: unknown, name: string): boolean {
 export function findRawClassNameUsages(source: string, program: AstNode): RawClassUsage[] {
   const usages: RawClassUsage[] = [];
 
-  walkAst(program, (node, ancestors) => {
+  walkAst(program, (node) => {
     if (!isClassAttribute(node)) {
       return;
     }
@@ -308,46 +308,11 @@ export function findRawClassNameUsages(source: string, program: AstNode): RawCla
       return;
     }
 
-    walkAst(
+    collectRawClassExpressionUsages(
+      usages,
+      source,
       value.expression,
-      (expressionNode, expressionAncestors) => {
-        if (isComputedMemberProperty(expressionNode, expressionAncestors)) {
-          return;
-        }
-
-        if (isStaticObjectPropertyKey(expressionNode, expressionAncestors)) {
-          return;
-        }
-
-        if (expressionNode.type === "Property" && expressionNode.computed !== true) {
-          const key = getStaticClassObjectKey(expressionNode);
-
-          if (key !== undefined) {
-            pushClassTokens(usages, source, key, expressionNode.start ?? value.start ?? 0);
-          }
-        }
-
-        const stringValue = getStringLiteralValue(expressionNode);
-
-        if (stringValue !== undefined) {
-          pushClassTokens(usages, source, stringValue, expressionNode.start ?? value.start ?? 0);
-          return;
-        }
-
-        if (expressionNode.type === "TemplateLiteral") {
-          const templateValue = getStaticTemplateValue(expressionNode);
-
-          if (templateValue !== undefined) {
-            pushClassTokens(
-              usages,
-              source,
-              templateValue,
-              expressionNode.start ?? value.start ?? 0
-            );
-          }
-        }
-      },
-      ancestors
+      value.start ?? node.start ?? 0
     );
   });
 
@@ -361,20 +326,6 @@ function isClassAttribute(node: AstNode): node is AstNode & { value: unknown } {
     node.name.type === "JSXIdentifier" &&
     (node.name.name === "className" || node.name.name === "class")
   );
-}
-
-function isComputedMemberProperty(node: AstNode, ancestors: AstNode[]): boolean {
-  const parent = ancestors.at(-1);
-
-  return (
-    parent?.type === "MemberExpression" && parent.computed === true && parent.property === node
-  );
-}
-
-function isStaticObjectPropertyKey(node: AstNode, ancestors: AstNode[]): boolean {
-  const parent = ancestors.at(-1);
-
-  return parent?.type === "Property" && parent.computed !== true && parent.key === node;
 }
 
 function getStaticClassObjectKey(node: AstNode): string | undefined {
@@ -391,6 +342,183 @@ function getStaticClassObjectKey(node: AstNode): string | undefined {
   return getStringLiteralValue(key);
 }
 
+function collectRawClassExpressionUsages(
+  usages: RawClassUsage[],
+  source: string,
+  node: AstNode,
+  fallbackIndex: number
+): void {
+  const stringValue = getStringLiteralValue(node);
+
+  if (stringValue !== undefined) {
+    pushClassTokens(usages, source, stringValue, node.start ?? fallbackIndex);
+    return;
+  }
+
+  if (node.type === "MemberExpression") {
+    return;
+  }
+
+  if (node.type === "TemplateLiteral") {
+    collectTemplateLiteralRawClassUsages(usages, source, node, fallbackIndex);
+    return;
+  }
+
+  if (node.type === "TaggedTemplateExpression") {
+    collectChildRawClassUsages(usages, source, node.quasi, fallbackIndex);
+    return;
+  }
+
+  if (node.type === "SpreadElement") {
+    collectChildRawClassUsages(usages, source, node.argument, fallbackIndex);
+    return;
+  }
+
+  if (node.type === "BinaryExpression") {
+    if (node.operator === "+") {
+      collectChildRawClassUsages(usages, source, node.left, fallbackIndex);
+      collectChildRawClassUsages(usages, source, node.right, fallbackIndex);
+    }
+    return;
+  }
+
+  if (node.type === "LogicalExpression") {
+    collectChildRawClassUsages(usages, source, node.right, fallbackIndex);
+    return;
+  }
+
+  if (node.type === "ConditionalExpression") {
+    collectChildRawClassUsages(usages, source, node.consequent, fallbackIndex);
+    collectChildRawClassUsages(usages, source, node.alternate, fallbackIndex);
+    return;
+  }
+
+  if (node.type === "ArrayExpression") {
+    const elements = Array.isArray(node.elements) ? node.elements : [];
+
+    for (const element of elements) {
+      collectChildRawClassUsages(usages, source, element, fallbackIndex);
+    }
+    return;
+  }
+
+  if (node.type === "ObjectExpression") {
+    collectObjectRawClassUsages(usages, source, node, fallbackIndex);
+    return;
+  }
+
+  if (node.type === "CallExpression") {
+    const args = Array.isArray(node.arguments) ? node.arguments : [];
+
+    for (const arg of args) {
+      collectChildRawClassUsages(usages, source, arg, fallbackIndex);
+    }
+    return;
+  }
+
+  if (isExpressionWrapper(node)) {
+    collectChildRawClassUsages(usages, source, node.expression, fallbackIndex);
+    return;
+  }
+
+  if (node.type === "SequenceExpression") {
+    const expressions = Array.isArray(node.expressions) ? node.expressions : [];
+    const lastExpression = expressions.at(-1);
+
+    collectChildRawClassUsages(usages, source, lastExpression, fallbackIndex);
+  }
+}
+
+function collectChildRawClassUsages(
+  usages: RawClassUsage[],
+  source: string,
+  node: unknown,
+  fallbackIndex: number
+): void {
+  if (!isAstNode(node)) {
+    return;
+  }
+
+  collectRawClassExpressionUsages(usages, source, node, fallbackIndex);
+}
+
+function collectTemplateLiteralRawClassUsages(
+  usages: RawClassUsage[],
+  source: string,
+  node: AstNode,
+  fallbackIndex: number
+): void {
+  const templateValue = getStaticTemplateValue(node);
+
+  if (templateValue !== undefined) {
+    pushClassTokens(usages, source, templateValue, node.start ?? fallbackIndex);
+    return;
+  }
+
+  const quasis = Array.isArray(node.quasis) ? node.quasis : [];
+  const expressions = Array.isArray(node.expressions) ? node.expressions : [];
+
+  for (const quasi of quasis) {
+    const quasiValue = getTemplateQuasiValue(quasi);
+
+    if (quasiValue !== undefined && isAstNode(quasi)) {
+      pushClassTokens(usages, source, quasiValue, quasi.start ?? fallbackIndex);
+    }
+  }
+
+  for (const expression of expressions) {
+    collectChildRawClassUsages(usages, source, expression, fallbackIndex);
+  }
+}
+
+function collectObjectRawClassUsages(
+  usages: RawClassUsage[],
+  source: string,
+  node: AstNode,
+  fallbackIndex: number
+): void {
+  const properties = Array.isArray(node.properties) ? node.properties : [];
+
+  for (const property of properties) {
+    if (!isAstNode(property)) {
+      continue;
+    }
+
+    if (property.type === "SpreadElement") {
+      collectChildRawClassUsages(usages, source, property.argument, fallbackIndex);
+      continue;
+    }
+
+    if (property.type !== "Property") {
+      continue;
+    }
+
+    if (property.computed === true) {
+      collectChildRawClassUsages(usages, source, property.key, fallbackIndex);
+      continue;
+    }
+
+    const key = getStaticClassObjectKey(property);
+
+    if (key !== undefined) {
+      pushClassTokens(usages, source, key, property.start ?? fallbackIndex);
+    }
+  }
+}
+
+function isExpressionWrapper(node: AstNode): boolean {
+  return (
+    (node.type === "ChainExpression" ||
+      node.type === "ParenthesizedExpression" ||
+      node.type === "TSAsExpression" ||
+      node.type === "TSInstantiationExpression" ||
+      node.type === "TSNonNullExpression" ||
+      node.type === "TSSatisfiesExpression" ||
+      node.type === "TSTypeAssertion") &&
+    isAstNode(node.expression)
+  );
+}
+
 function getStaticTemplateValue(node: AstNode): string | undefined {
   const expressions = Array.isArray(node.expressions) ? node.expressions : [];
 
@@ -401,6 +529,21 @@ function getStaticTemplateValue(node: AstNode): string | undefined {
   const quasi =
     Array.isArray(node.quasis) && isAstNode(node.quasis[0]) ? node.quasis[0] : undefined;
   const value = quasi?.value;
+
+  return typeof value === "object" &&
+    value !== null &&
+    "cooked" in value &&
+    typeof value.cooked === "string"
+    ? value.cooked
+    : undefined;
+}
+
+function getTemplateQuasiValue(node: unknown): string | undefined {
+  if (!isAstNode(node)) {
+    return undefined;
+  }
+
+  const value = node.value;
 
   return typeof value === "object" &&
     value !== null &&

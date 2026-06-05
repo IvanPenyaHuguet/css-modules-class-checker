@@ -143,6 +143,30 @@ describe("class usage extraction", () => {
     ]);
   });
 
+  it("finds raw class strings in spread and tagged template composition", () => {
+    const source = `
+      import clsx from "clsx";
+
+      <button className={clsx(...["one"], { ...{ two: active } }, tw\`three\`)} />;
+    `;
+    const program = parseProgram(source);
+    const usages = findRawClassNameUsages(source, program);
+
+    expect(usages.map((usage) => usage.className)).toEqual(["one", "two", "three"]);
+  });
+
+  it("finds raw class strings in computed object keys", () => {
+    const source = `
+      import clsx from "clsx";
+
+      <button className={clsx({ [active ? "one" : "two"]: active })} />;
+    `;
+    const program = parseProgram(source);
+    const usages = findRawClassNameUsages(source, program);
+
+    expect(usages.map((usage) => usage.className)).toEqual(["one", "two"]);
+  });
+
   it("finds raw class strings in class attributes", () => {
     const source = `
       import clsx from "clsx";
@@ -155,6 +179,46 @@ describe("class usage extraction", () => {
     const usages = findRawClassNameUsages(source, program);
 
     expect(usages.map((usage) => usage.className)).toEqual(["one", "two", "three", "four"]);
+  });
+
+  it("does not find raw class strings inside computed module class accesses", () => {
+    const source = `
+      import styles from "./button.module.css";
+
+      <button className={styles[active ? "primary" : "secondary"]} />;
+    `;
+    const program = parseProgram(source);
+    const moduleUsages = findCssModuleClassUsages(source, program, [cssImport]);
+    const rawUsages = findRawClassNameUsages(source, program);
+
+    expect(resolvedClassNames(moduleUsages)).toEqual(["primary", "secondary"]);
+    expect(rawUsages.map((usage) => usage.className)).toEqual([]);
+  });
+
+  it("does not find raw class strings in non-class conditional tests", () => {
+    const source = `
+      import styles from "./button.module.css";
+
+      <button className={tone === "primary" ? styles.primary : styles.secondary} />;
+    `;
+    const program = parseProgram(source);
+    const rawUsages = findRawClassNameUsages(source, program);
+
+    expect(rawUsages.map((usage) => usage.className)).toEqual([]);
+  });
+
+  it("does not find raw class strings in computed object keys backed by CSS Modules", () => {
+    const source = `
+      import clsx from "clsx";
+      import styles from "./button.module.css";
+
+      <button className={clsx({ [styles[active ? "primary" : "secondary"]]: active })} />;
+      <button className={clsx({ [tone === "primary" ? styles.primary : styles.secondary]: active })} />;
+    `;
+    const program = parseProgram(source);
+    const rawUsages = findRawClassNameUsages(source, program);
+
+    expect(rawUsages.map((usage) => usage.className)).toEqual([]);
   });
 });
 
