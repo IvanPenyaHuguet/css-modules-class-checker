@@ -5,7 +5,9 @@
       "code": "css-module-file-not-found",
       "severity": "warning",
       "filePath": "button.tsx",
-      "cssModulePath": "missing.module.css"
+      "cssModulePath": "missing.module.css",
+      "line": 1,
+      "column": 1
     }
   ]
 }

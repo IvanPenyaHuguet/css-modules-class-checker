@@ -4,6 +4,7 @@ import path from "node:path";
 import { mergeRules } from "./config";
 import { extractCssClasses } from "./css/extract-classes";
 import { findSourceFiles } from "./files";
+import { getLocation } from "./locations";
 import { findCssModuleClassUsages, findRawClassNameUsages } from "./source/class-usages";
 import { findCssModuleImports } from "./source/imports";
 import { parseSourceFile } from "./source/parse";
@@ -130,7 +131,7 @@ async function analyzeSourceFile(
         message: `CSS Module file not found: ${cssImport.importPath}.`,
         filePath,
         cssModulePath: cssImport.cssModulePath,
-        location: { index: cssImport.index, line: 1, column: 1 }
+        location: getLocation(source, cssImport.index)
       });
       continue;
     }
@@ -223,7 +224,7 @@ function analyzeSourceFileSync(
         message: `CSS Module file not found: ${cssImport.importPath}.`,
         filePath,
         cssModulePath: cssImport.cssModulePath,
-        location: { index: cssImport.index, line: 1, column: 1 }
+        location: getLocation(source, cssImport.index)
       });
       continue;
     }

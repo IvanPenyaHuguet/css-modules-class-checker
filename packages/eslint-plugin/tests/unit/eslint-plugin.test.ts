@@ -17,8 +17,10 @@ type RuleContext = {
   sourceCode: {
     text: string;
   };
-  report: (descriptor: { message: string; loc?: unknown; node?: unknown }) => void;
+  report: (descriptor: RuleReport) => void;
 };
+
+type RuleReport = { message: string; loc?: unknown; node?: unknown };
 
 type RuleVisitor = {
   before?: () => boolean | void;
@@ -105,6 +107,13 @@ describe("eslint plugin", () => {
     expect(reports[0]).toContain(`[${testCase.code}`);
   });
 
+  it("reports missing CSS Module files at the import declaration", () => {
+    const reports = runRuleReports("css-module-file-not-found", "css-module-file-not-found-offset");
+
+    expect(reports).toHaveLength(1);
+    expect(reports[0]?.loc).toEqual({ line: 3, column: 4 });
+  });
+
   it("reports every matching diagnostic for a rule in one source file", () => {
     const reports = runRule("missing-css-module-class", "locals-default-no-transform");
 
@@ -184,6 +193,15 @@ function runRule(
   fileName = "button.tsx",
   options?: unknown
 ): string[] {
+  return runRuleReports(code, fixture, fileName, options).map((report) => report.message);
+}
+
+function runRuleReports(
+  code: (typeof ruleCodes)[number],
+  fixture: string,
+  fileName = "button.tsx",
+  options?: unknown
+): RuleReport[] {
   const { reports, visitor } = createRuleVisitor(code, fixture, fileName, options);
 
   if (visitor?.before?.() === false) {
@@ -208,7 +226,7 @@ function createRuleVisitor(
   fixture: string,
   fileName = "button.tsx",
   options?: unknown
-): { reports: string[]; visitor: RuleVisitor | undefined } {
+): { reports: RuleReport[]; visitor: RuleVisitor | undefined } {
   const filePath = path.resolve(coreUseCasesRoot, fixture, "src", fileName);
   const rule = rules[code];
 
@@ -216,7 +234,7 @@ function createRuleVisitor(
     throw new Error(`Rule ${code} does not expose a create API.`);
   }
 
-  const reports: string[] = [];
+  const reports: RuleReport[] = [];
   const context: RuleContext = {
     filename: filePath,
     options: options === undefined ? [] : [options],
@@ -224,7 +242,7 @@ function createRuleVisitor(
       text: readFileSync(filePath, "utf8")
     },
     report(descriptor) {
-      reports.push(descriptor.message);
+      reports.push(descriptor);
     }
   };
 

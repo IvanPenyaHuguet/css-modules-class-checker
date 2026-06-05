@@ -60,12 +60,6 @@ export function getReportLocation(
   context: Context,
   node: Parameters<NonNullable<VisitorWithHooks["Program"]>>[0]
 ): { node: typeof node } | { loc: { line: number; column: number } } {
-  if (diagnostic.code === "css-module-file-not-found") {
-    return {
-      loc: getMissingImportLocation(diagnostic, context.sourceCode.text)
-    };
-  }
-
   if (
     diagnostic.code === "unused-css-module-class" ||
     diagnostic.code === "empty-css-module-selector" ||
@@ -79,32 +73,6 @@ export function getReportLocation(
       line: diagnostic.line,
       column: Math.max(0, diagnostic.column - 1)
     }
-  };
-}
-
-function getMissingImportLocation(
-  diagnostic: Diagnostic,
-  source: string
-): { line: number; column: number } {
-  const importPath = /CSS Module file not found: (?<importPath>.+)\./.exec(diagnostic.message)
-    ?.groups?.importPath;
-
-  if (!importPath) {
-    return { line: diagnostic.line, column: Math.max(0, diagnostic.column - 1) };
-  }
-
-  const importIndex = source.indexOf(importPath);
-
-  if (importIndex === -1) {
-    return { line: diagnostic.line, column: Math.max(0, diagnostic.column - 1) };
-  }
-
-  const beforeImport = source.slice(0, importIndex);
-  const lines = beforeImport.split(/\r\n|\r|\n/);
-
-  return {
-    line: lines.length,
-    column: Math.max(0, lines.at(-1)?.length ?? 0)
   };
 }
 
