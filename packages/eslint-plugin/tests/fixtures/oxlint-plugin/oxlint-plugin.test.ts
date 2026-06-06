@@ -7,6 +7,22 @@ const fixtureRoot = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(fixtureRoot, "../../..");
 
 describe("oxlint plugin fixture", () => {
+  it("accepts disabled diagnostics in source fixtures", () => {
+    runOxlintExpectingSuccess([
+      "-c",
+      path.join(fixtureRoot, "oxlint.config.ts"),
+      path.join(fixtureRoot, "src")
+    ]);
+  });
+
+  it("does not report diagnostics when rules are turned off", () => {
+    runOxlintExpectingSuccess([
+      "-c",
+      path.join(fixtureRoot, "oxlint.rules-off.config.ts"),
+      path.join(fixtureRoot, "rules-off")
+    ]);
+  });
+
   it("honors eslint-disable-next-line without hiding later diagnostics", () => {
     const output = runOxlintExpectingFailure([
       "-c",
@@ -24,7 +40,27 @@ describe("oxlint plugin fixture", () => {
   });
 });
 
+function runOxlintExpectingSuccess(args: string[]): void {
+  const result = runOxlint(args);
+
+  if (result.status === 0) {
+    return;
+  }
+
+  throw new Error(`Expected oxlint to pass.\n${result.output}`);
+}
+
 function runOxlintExpectingFailure(args: string[]): string {
+  const result = runOxlint(args);
+
+  if (result.status !== 0) {
+    return result.output;
+  }
+
+  throw new Error("Expected oxlint to report diagnostics.");
+}
+
+function runOxlint(args: string[]): { output: string; status: number | null } {
   const result = spawnSync(process.execPath, [getOxlintBinPath(), ...args], {
     cwd: packageRoot,
     encoding: "utf8"
@@ -34,11 +70,10 @@ function runOxlintExpectingFailure(args: string[]): string {
     throw result.error;
   }
 
-  if (result.status !== 0) {
-    return `${result.stdout ?? ""}${result.stderr ?? ""}`;
-  }
-
-  throw new Error("Expected oxlint to report diagnostics.");
+  return {
+    output: `${result.stdout ?? ""}${result.stderr ?? ""}`,
+    status: result.status
+  };
 }
 
 function getOxlintBinPath(): string {

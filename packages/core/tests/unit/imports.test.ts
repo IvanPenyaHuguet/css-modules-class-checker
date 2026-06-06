@@ -94,4 +94,18 @@ describe("CSS Module import extraction", () => {
       }
     ]);
   });
+
+  it("ignores side-effect CSS Module imports because they expose no local class map", () => {
+    const source = `
+      import "./button.module.css";
+    `;
+    const filePath = path.resolve("/project/button.tsx");
+    const parsed = parseSourceFile(filePath, source);
+
+    if (!parsed.ok) {
+      throw new Error(parsed.message);
+    }
+
+    expect(findCssModuleImports(parsed.program, filePath)).toEqual([]);
+  });
 });

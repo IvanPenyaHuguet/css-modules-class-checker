@@ -1,4 +1,4 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -36,6 +36,67 @@ describe("target files", () => {
       status: "SUCCESS",
       filesChecked: 1,
       cssModulesChecked: 1,
+      errors: []
+    });
+  });
+
+  it("skips a single file target that is not a source file", async () => {
+    const targetRoot = await mkdtemp(path.join(os.tmpdir(), "stale-styles-target-file-"));
+    const textFile = path.join(targetRoot, "notes.txt");
+
+    await writeFile(textFile, "not source code\n");
+
+    const result = await checkCssModules({ target: textFile });
+
+    expect(result).toMatchObject({
+      status: "SUCCESS",
+      filesChecked: 0,
+      cssModulesChecked: 0,
+      errors: []
+    });
+  });
+
+  it("skips a single source file target when it matches ignore options", async () => {
+    const targetRoot = await mkdtemp(path.join(os.tmpdir(), "stale-styles-target-file-"));
+    const sourceFile = path.join(targetRoot, "ignored.tsx");
+
+    await writeFile(sourceFile, 'import styles from "./missing.module.css"; styles.root;\n');
+
+    const result = await checkCssModules({ target: sourceFile, ignore: ["ignored.tsx"] });
+
+    expect(result).toMatchObject({
+      status: "SUCCESS",
+      filesChecked: 0,
+      cssModulesChecked: 0,
+      errors: []
+    });
+  });
+
+  it("applies directory and glob ignores while walking target directories", async () => {
+    const targetRoot = await mkdtemp(path.join(os.tmpdir(), "stale-styles-target-dir-"));
+
+    await mkdir(path.join(targetRoot, "src"), { recursive: true });
+    await mkdir(path.join(targetRoot, "ignored"), { recursive: true });
+    await mkdir(path.join(targetRoot, "generated"), { recursive: true });
+    await writeFile(path.join(targetRoot, "src", "button.tsx"), "export const ok = true;\n");
+    await writeFile(
+      path.join(targetRoot, "ignored", "button.tsx"),
+      'import styles from "./missing.module.css"; styles.root;\n'
+    );
+    await writeFile(
+      path.join(targetRoot, "generated", "button.generated.tsx"),
+      'import styles from "./missing.module.css"; styles.root;\n'
+    );
+
+    const result = await checkCssModules({
+      target: targetRoot,
+      ignore: ["ignored", "*.generated.tsx"]
+    });
+
+    expect(result).toMatchObject({
+      status: "SUCCESS",
+      filesChecked: 1,
+      cssModulesChecked: 0,
       errors: []
     });
   });

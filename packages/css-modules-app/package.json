@@ -1,6 +1,6 @@
 {
   "name": "@stale-styles/css-modules",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Importable CSS Modules class checker application API.",
   "license": "MIT",
   "files": [
@@ -20,7 +20,7 @@
     "format:check": "oxfmt --check .",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "test": "vitest run --root ../.. packages/css-modules-app/tests",
+    "test": "vitest run --root ../.. --project css-modules-app",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

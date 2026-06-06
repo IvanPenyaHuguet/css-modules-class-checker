@@ -97,6 +97,37 @@ describe("class usage extraction", () => {
     expect(resolvedClassNames(usages)).toEqual([]);
   });
 
+  it("ignores named import identifiers shadowed by destructuring and rest bindings", () => {
+    const source = `
+      import { primary } from "./button.module.css";
+
+      function fromParams({ primary = "local" }) {
+        return primary;
+      }
+
+      function fromRest(...primary: string[]) {
+        return primary.join(" ");
+      }
+
+      {
+        const [primary] = ["local"];
+        primary;
+      }
+    `;
+    const program = parseProgram(source);
+    const usages = findCssModuleClassUsages(source, program, [
+      {
+        localName: undefined,
+        namedImports: [{ importedName: "primary", localName: "primary", index: 0 }],
+        importPath: "./button.module.css",
+        cssModulePath: "/project/button.module.css",
+        index: 0
+      }
+    ]);
+
+    expect(resolvedClassNames(usages)).toEqual([]);
+  });
+
   it("does not count type literal property keys as named import usages", () => {
     const source = `
       import { primary } from "./button.module.css";
@@ -160,6 +191,16 @@ describe("class usage extraction", () => {
       import clsx from "clsx";
 
       <button className={clsx({ [active ? "one" : "two"]: active })} />;
+    `;
+    const program = parseProgram(source);
+    const usages = findRawClassNameUsages(source, program);
+
+    expect(usages.map((usage) => usage.className)).toEqual(["one", "two"]);
+  });
+
+  it("finds raw class strings in sequence expressions", () => {
+    const source = `
+      <button className={(trackRender(), "one two")} />;
     `;
     const program = parseProgram(source);
     const usages = findRawClassNameUsages(source, program);
