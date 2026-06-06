@@ -22,7 +22,7 @@
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "lint": "oxlint -c ../../oxlint.config.ts src tests/unit tests/fixtures/oxlint-plugin/src",
-    "lint:fix": "oxlint --fix .",
+    "lint:fix": "oxlint --fix -c ../../oxlint.config.ts src tests/unit tests/fixtures/oxlint-plugin/src",
     "test": "vitest run --root ../.. --project eslint-plugin",
     "typecheck": "tsc --noEmit"
   },
