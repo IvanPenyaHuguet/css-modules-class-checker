@@ -139,10 +139,10 @@ jobs:
         run: pnpm run build
 
       - name: Dry-run staged publish
-        run: pnpm stage publish --recursive --access public --tag "$NPM_TAG" --dry-run
+        run: pnpm stage publish --recursive --access public --tag "$NPM_TAG" --dry-run --no-git-checks
 
       - name: Stage packages
-        run: pnpm stage publish --recursive --access public --tag "$NPM_TAG" --json
+        run: pnpm stage publish --recursive --access public --tag "$NPM_TAG" --json --no-git-checks
 
       - name: Approval instructions
         run: |
