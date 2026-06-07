@@ -10,11 +10,11 @@
     "dist",
     "README.md"
   ],
+  "type": "module",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "type": "module",
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
     "format": "oxfmt .",

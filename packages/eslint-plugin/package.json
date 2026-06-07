@@ -6,10 +6,6 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "type": "module",
   "exports": {
     ".": {
@@ -20,6 +16,10 @@
       "types": "./dist/css-modules.d.ts",
       "import": "./dist/css-modules.js"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
