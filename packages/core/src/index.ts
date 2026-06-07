@@ -1,5 +1,6 @@
 export { checkCssModules, checkCssModuleSourceFile, checkCssModuleSourceFileSync } from "./checker";
 export { defaultMatchFiles } from "./config";
+export { sourceMayImportCssModule } from "./source/imports";
 export type {
   CheckOptions,
   CheckResult,

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { findCssModuleImports } from "../../src/source/imports";
+import { findCssModuleImports, sourceMayImportCssModule } from "../../src/source/imports";
 import { parseSourceFile } from "../../src/source/parse";
 
 describe("CSS Module import extraction", () => {
@@ -107,5 +107,18 @@ describe("CSS Module import extraction", () => {
     }
 
     expect(findCssModuleImports(parsed.program, filePath)).toEqual([]);
+  });
+
+  it("detects source files that may contain analyzable CSS Module imports", () => {
+    const filePath = path.resolve("/project/button.tsx");
+
+    expect(sourceMayImportCssModule('import styles from "./button.module.css";', filePath)).toBe(
+      true
+    );
+    expect(sourceMayImportCssModule('import "./button.module.css";', filePath)).toBe(false);
+    expect(sourceMayImportCssModule("export const button = 'plain';", filePath)).toBe(false);
+    expect(
+      sourceMayImportCssModule('import styles from "./button.icss";', filePath, [".icss"])
+    ).toBe(true);
   });
 });

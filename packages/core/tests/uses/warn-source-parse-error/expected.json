@@ -4,7 +4,7 @@
     {
       "code": "source-parse-error",
       "severity": "warning",
-      "filePath": "button.tsx"
+      "filePath": "broken-css-module-import.tsx"
     }
   ]
 }

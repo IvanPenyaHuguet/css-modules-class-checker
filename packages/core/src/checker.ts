@@ -6,7 +6,7 @@ import { extractCssClasses } from "./css/extract-classes";
 import { findSourceFiles } from "./files";
 import { getLocation } from "./locations";
 import { findCssModuleClassUsages, findRawClassNameUsages } from "./source/class-usages";
-import { findCssModuleImports } from "./source/imports";
+import { findCssModuleImports, sourceMayImportCssModule } from "./source/imports";
 import { parseSourceFile } from "./source/parse";
 import type {
   CheckOptions,
@@ -103,6 +103,11 @@ async function analyzeSourceFile(
   diagnostics: Diagnostic[]
 ): Promise<void> {
   const source = sourceInput ?? (await readFile(filePath, "utf8"));
+
+  if (!sourceMayImportCssModule(source, filePath, options.matchFiles)) {
+    return;
+  }
+
   const parsedSource = parseSourceFile(filePath, source);
 
   if (!parsedSource.ok) {
@@ -195,6 +200,11 @@ function analyzeSourceFileSync(
   diagnostics: Diagnostic[]
 ): void {
   const source = sourceInput ?? readFileSync(filePath, "utf8");
+
+  if (!sourceMayImportCssModule(source, filePath, options.matchFiles)) {
+    return;
+  }
+
   const parsedSource = parseSourceFile(filePath, source);
 
   if (!parsedSource.ok) {

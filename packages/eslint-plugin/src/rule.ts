@@ -1,13 +1,13 @@
 import { defineRule } from "@oxlint/plugins";
 import type { Context, Rule, RuleOptionsSchema, VisitorWithHooks } from "@oxlint/plugins";
-import { defaultMatchFiles } from "@stale-styles/core";
+import { sourceMayImportCssModule } from "@stale-styles/core";
 import {
   formatDiagnosticMessage,
   getDiagnostics,
   getReportLocation,
   isVirtualFile
 } from "./diagnostics";
-import { validateOptions } from "./options";
+import { normalizeOptions, validateOptions } from "./options";
 import { getRuleDescription } from "./rule-descriptions";
 import type { PluginDiagnosticCode } from "./types";
 
@@ -104,37 +104,9 @@ function shouldCheckFile(context: Context): boolean {
     return false;
   }
 
-  return mightContainCssModuleImport(source, context.options?.[0]);
-}
-
-function mightContainCssModuleImport(source: string, rawOptions: unknown): boolean {
-  const matchFiles = getMatchFiles(rawOptions);
-
-  return matchFiles.some((matcher) => {
-    if (source.includes(matcher)) {
-      return true;
-    }
-
-    return !canMatchImportSourceTextOnly(matcher);
-  });
-}
-
-function getMatchFiles(rawOptions: unknown): readonly string[] {
-  if (!isPlainObject(rawOptions) || !Array.isArray(rawOptions.matchFiles)) {
-    return defaultMatchFiles;
-  }
-
-  const matchFiles = rawOptions.matchFiles.filter(
-    (matcher): matcher is string => typeof matcher === "string"
+  return sourceMayImportCssModule(
+    source,
+    filePath,
+    normalizeOptions(context.options?.[0]).matchFiles
   );
-
-  return matchFiles.length > 0 ? matchFiles : defaultMatchFiles;
-}
-
-function canMatchImportSourceTextOnly(matcher: string): boolean {
-  return matcher.length > 0 && !matcher.includes("/") && !matcher.includes("\\");
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

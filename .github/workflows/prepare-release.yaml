@@ -160,7 +160,14 @@ jobs:
 
       - name: Enable auto-merge
         if: ${{ inputs.auto_merge }}
-        run: gh pr merge "${{ steps.pr.outputs.url }}" --squash --auto --delete-branch
+        run: |
+          gh repo view --json nameWithOwner,mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed,autoMergeAllowed
+          gh pr view "${{ steps.pr.outputs.url }}" --json url,state,isDraft,mergeStateStatus,autoMergeRequest
+
+          if ! gh pr merge "${{ steps.pr.outputs.url }}" --squash --auto --delete-branch; then
+            echo "::error::Auto-merge could not be enabled by the workflow token. Check the repository auto-merge setting and the permissions of RELEASE_GITHUB_TOKEN."
+            exit 1
+          fi
 
       - name: Release summary
         run: |
