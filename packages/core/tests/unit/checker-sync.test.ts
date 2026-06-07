@@ -19,10 +19,35 @@ describe("checkCssModuleSourceFileSync", () => {
     });
   });
 
+  it("ignores source parse errors in files without CSS Module imports", () => {
+    const result = checkCssModuleSourceFileSync({
+      filePath: path.resolve("vite-env.d.ts"),
+      source: [
+        '/// <reference types="vite/client" />',
+        "",
+        "interface ImportMetaEnv {",
+        "  readonly VITE_SOME_KEY: string;",
+        "}",
+        "",
+        "declare module 'My/App' {",
+        "  declare const App: import('react').ComponentType;",
+        "  export default App;",
+        "}"
+      ].join("\n")
+    });
+
+    expect(result).toMatchObject({
+      status: "SUCCESS",
+      filesChecked: 1,
+      cssModulesChecked: 0,
+      errors: []
+    });
+  });
+
   it("reports source parse errors", () => {
     const result = checkCssModuleSourceFileSync({
       filePath: path.resolve("button.tsx"),
-      source: "export function Button("
+      source: 'import styles from "./button.module.css";\nexport function Button('
     });
 
     expect(result).toMatchObject({

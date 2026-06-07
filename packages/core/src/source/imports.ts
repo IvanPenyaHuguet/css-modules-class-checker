@@ -73,6 +73,31 @@ export function findCssModuleImports(
   return imports;
 }
 
+export function sourceMayImportCssModule(
+  source: string,
+  filePath: string,
+  matchFiles?: CssModuleFileMatcher[]
+): boolean {
+  const staticImportPattern =
+    /(?:^|[;\n\r])\s*import\s+(?!["'])(?:[^;]*?)\s+from\s*["']([^"']+)["']/g;
+
+  for (const match of source.matchAll(staticImportPattern)) {
+    const importPath = match[1];
+
+    if (!importPath) {
+      continue;
+    }
+
+    const resolvedPath = resolveUnresolvedPath(filePath, importPath);
+
+    if (matchesCssModuleFile(importPath, resolvedPath, matchFiles)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function resolveCssModulePath(filePath: string, importPath: string): string {
   return (
     resolver.resolveFileSync(filePath, importPath).path ??
