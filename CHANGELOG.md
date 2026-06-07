@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.0](https://github.com/IvanPenyaHuguet/css-modules-class-checker/compare/v1.0.0-beta.4...v1.0.0) (2026-06-07)
+
+
+### Bug Fixes
+
+* parse error .d.ts file without css module import ([9bfd3f0](https://github.com/IvanPenyaHuguet/css-modules-class-checker/commit/9bfd3f0f2b98ad50a71091ee733df533b28aa9dd))
+
 ## [1.0.0-beta.4](https://github.com/stalecheck/stale-styles/compare/v1.0.0-beta.2...v1.0.0-beta.4) (2026-06-07)
 
 
