@@ -1,8 +1,13 @@
 {
   "name": "@stale-styles/css-modules",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Importable CSS Modules class checker application API.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stalecheck/stale-styles.git",
+    "directory": "packages/css-modules-app"
+  },
   "files": [
     "dist",
     "README.md"
@@ -13,6 +18,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",

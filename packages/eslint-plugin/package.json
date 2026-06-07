@@ -1,8 +1,13 @@
 {
   "name": "@stale-styles/eslint-plugin",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "ESLint and Oxlint plugin for CSS Modules class checking.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stalecheck/stale-styles.git",
+    "directory": "packages/eslint-plugin"
+  },
   "files": [
     "dist"
   ],
@@ -16,6 +21,10 @@
       "types": "./dist/css-modules.d.ts",
       "import": "./dist/css-modules.js"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",

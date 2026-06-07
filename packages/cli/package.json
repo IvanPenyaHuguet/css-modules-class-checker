@@ -1,8 +1,13 @@
 {
   "name": "@stale-styles/cli",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Executable CLI for @stale-styles/css-modules.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stalecheck/stale-styles.git",
+    "directory": "packages/cli"
+  },
   "bin": {
     "stale-styles": "./dist/cli.js"
   },
@@ -11,6 +16,10 @@
     "README.md"
   ],
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
     "format": "oxfmt .",
