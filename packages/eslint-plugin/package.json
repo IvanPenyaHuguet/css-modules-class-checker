@@ -1,6 +1,6 @@
 {
   "name": "@stale-styles/eslint-plugin",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "ESLint and Oxlint plugin for CSS Modules class checking.",
   "license": "MIT",
   "files": [
