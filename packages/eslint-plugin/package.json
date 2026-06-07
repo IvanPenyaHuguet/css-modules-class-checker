@@ -3,6 +3,11 @@
   "version": "1.0.0-beta.3",
   "description": "ESLint and Oxlint plugin for CSS Modules class checking.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stalecheck/stale-styles.git",
+    "directory": "packages/eslint-plugin"
+  },
   "files": [
     "dist"
   ],
