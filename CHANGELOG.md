@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.0-beta.4](https://github.com/stalecheck/stale-styles/compare/v1.0.0-beta.2...v1.0.0-beta.4) (2026-06-07)
+
+
+### Features
+
+* code monorepo ([ff12337](https://github.com/stalecheck/stale-styles/commit/ff123370eacd2317d53f5bfabf44da0da6280dd2))
+
 ## [1.0.0-beta.3](https://github.com/IvanPenyaHuguet/css-modules-class-checker/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2026-06-07)
 
 
